@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background -->
+  <rect width="200" height="200" rx="40" fill="#4B8BA8"/>
+  
+  <!-- Chat bubble Q -->
+  <g>
+    <!-- Circle -->
+    <circle cx="70" cy="100" r="45" fill="none" stroke="white" stroke-width="8"/>
+    <!-- Chat pointer -->
+    <polygon points="55,135 40,160 65,145" fill="white"/>
+  </g>
+  
+  <!-- M letter -->
+  <g>
+    <path d="M 115 150 L 115 70 L 140 110 L 165 70 L 165 150" 
+          fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

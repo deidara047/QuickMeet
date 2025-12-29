@@ -16,7 +16,7 @@ Verifica: `dotnet --version`, `node --version`, `npm --version`, `docker --versi
 ```bash
 # Desde la raíz del proyecto
 cp backend/.env.example.dev backend/.env.local
-cp frontend/.env.example.dev frontend/.env
+cp frontend/.env.example frontend/.env
 
 # Restaurar dependencias
 cd backend
@@ -48,7 +48,7 @@ dotnet run --project src/QuickMeet.API
 
 Espera a: `Application started. Press Ctrl+C to shut down.`
 
-Disponible en: http://localhost:5173
+Disponible en: http://localhost:5000
 
 ### Terminal 3: Frontend (Angular)
 

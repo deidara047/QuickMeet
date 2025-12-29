@@ -1,2 +1,2 @@
-// Componentes compartidos
+export * from './logo/logo.component';
 
