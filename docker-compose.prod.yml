@@ -1,0 +1,82 @@
+version: '3.8'
+
+# Docker Compose para PRODUCTION
+# Usar en Azure Container Instances, AWS ECS, o similar
+# NO incluir volumenes persistentes - usar servicios cloud
+
+services:
+  # ====================================
+  # API Backend - PRODUCTION
+  # ====================================
+  api:
+    image: ghcr.io/yourusername/quickmeet-api:latest
+    container_name: quickmeet-api-prod
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:8080"
+      # Usar GitHub Secrets para estos valores
+      ConnectionStrings__DefaultConnection: ${DB_CONNECTION_STRING}
+      JWT_Secret: ${JWT_SECRET}
+      SendGrid_ApiKey: ${SENDGRID_API_KEY}
+      CORS_AllowedOrigins: "https://quickmeet.app,https://www.quickmeet.app"
+      RequireHttps: "true"
+      RateLimiting__RequestsPerMinute: "100"
+    ports:
+      - "8080:8080"
+    networks:
+      - quickmeet-prod
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    # Sin volumenes - logs en stdout
+
+  # ====================================
+  # Frontend - PRODUCTION
+  # ====================================
+  frontend:
+    image: ghcr.io/yourusername/quickmeet-frontend:latest
+    container_name: quickmeet-frontend-prod
+    restart: always
+    environment:
+      NG_APP_API_URL: "https://api.quickmeet.app"
+      NG_APP_ENVIRONMENT: "production"
+      NG_APP_LOG_LEVEL: "error"
+      NG_APP_ENABLE_DEBUG_PANEL: "false"
+    ports:
+      - "80:80"
+    networks:
+      - quickmeet-prod
+    healthcheck:
+      test: wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      - api
+
+  # ====================================
+  # Nginx Reverse Proxy (opcional)
+  # ====================================
+  # proxy:
+  #   image: nginx:alpine
+  #   container_name: quickmeet-proxy
+  #   ports:
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx-prod.conf:/etc/nginx/nginx.conf
+  #     - /etc/letsencrypt/live/quickmeet.app/fullchain.pem:/etc/nginx/certs/cert.pem
+  #     - /etc/letsencrypt/live/quickmeet.app/privkey.pem:/etc/nginx/certs/key.pem
+  #   depends_on:
+  #     - api
+  #     - frontend
+  #   networks:
+  #     - quickmeet-prod
+
+networks:
+  quickmeet-prod:
+    driver: bridge

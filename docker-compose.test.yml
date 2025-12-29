@@ -1,0 +1,86 @@
+version: '3.8'
+
+# Docker Compose para TESTING (CI/CD, GitHub Actions)
+# NO se usa en desarrollo local
+# Se ejecuta automáticamente en el workflow de CI/CD
+
+services:
+  # ====================================
+  # SQL Server - TEST
+  # ====================================
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: quickmeet-sqlserver-test
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "TestPassword123!@"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    networks:
+      - quickmeet-test
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "TestPassword123!@" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: src/QuickMeet.API/Dockerfile
+    container_name: quickmeet-api-test
+    environment:
+      ASPNETCORE_ENVIRONMENT: Testing
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__Migration: "Server=sql-server,1433;Database=QuickMeet_Test;User Id=sa;Password=TestPassword123!@;TrustServerCertificate=true;"
+      ConnectionStrings__DefaultConnection: "Server=sql-server,1433;Database=QuickMeet_Test;User Id=quickmeet_app;Password=App123!@#Secure$Pass2025;TrustServerCertificate=true;"
+      JWT_Secret: "test-secret-key-min-32-characters-for-hs256-algo-needed-here"
+      SendGrid_ApiKey: "SG.test-key-dummy"
+      CORS_AllowedOrigins: "http://api,http://localhost:5000,http://frontend"
+      SKIP_EMAIL_VERIFICATION: "true"
+      USE_IN_MEMORY_CACHE: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      sql-server:
+        condition: service_healthy
+    networks:
+      - quickmeet-test
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ====================================
+  # Frontend - TEST
+  # ====================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: quickmeet-frontend-test
+    environment:
+      NG_APP_API_URL: "http://api:8080"
+      NG_APP_ENVIRONMENT: "testing"
+      NG_APP_LOG_LEVEL: "debug"
+      NG_APP_ENABLE_DEBUG_PANEL: "true"
+    ports:
+      - "4200:4200"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - quickmeet-test
+    healthcheck:
+      test: curl -f http://localhost:4200/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  quickmeet-test:
+    driver: bridge

@@ -1,0 +1,17 @@
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\bin\Debug\net10.0\QuickMeet.Infrastructure.deps.json
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\bin\Debug\net10.0\QuickMeet.Infrastructure.runtimeconfig.json
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\bin\Debug\net10.0\QuickMeet.Infrastructure.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\bin\Debug\net10.0\QuickMeet.Infrastructure.pdb
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\bin\Debug\net10.0\QuickMeet.Core.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\bin\Debug\net10.0\QuickMeet.Core.pdb
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\QuickMeet.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\QuickMeet.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\QuickMeet.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\QuickMeet.Infrastructure.AssemblyInfo.cs
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\QuickMeet.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\QuickMee.3A29B0A7.Up2Date
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\QuickMeet.Infrastructure.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\refint\QuickMeet.Infrastructure.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\QuickMeet.Infrastructure.pdb
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\QuickMeet.Infrastructure.genruntimeconfig.cache
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Infrastructure\obj\Debug\net10.0\ref\QuickMeet.Infrastructure.dll

@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # ====================================
+  # SQL Server para desarrollo
+  # ====================================
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: quickmeet-sqlserver-dev
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Develop123!@"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_dev_data:/var/opt/mssql
+      - ./src/QuickMeet.Infrastructure/Data/InitScripts:/docker-entrypoint-initdb.d
+    networks:
+      - quickmeet-network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Develop123!@" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ====================================
+  # API Backend (.NET 8)
+  # Para desarrollo: corre localmente sin Docker
+  # Este servicio es opcional para validación
+  # ====================================
+  api:
+    build:
+      context: .
+      dockerfile: src/QuickMeet.API/Dockerfile
+    container_name: quickmeet-api-dev
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: "Server=sql-server,1433;Database=QuickMeet;User Id=sa;Password=Develop123!@;TrustServerCertificate=true;"
+      JWT_Secret: "your-development-secret-key-change-in-production-min-32-chars"
+      SendGrid_ApiKey: "SG.development-key"
+    ports:
+      - "5000:8080"
+    depends_on:
+      sql-server:
+        condition: service_healthy
+    networks:
+      - quickmeet-network
+    # Comentado: Los devs corren esto localmente sin Docker
+    # Para activar Docker: descomentar
+    # volumes:
+    #   - ./src:/app/src
+    #   - /app/bin
+    #   - /app/obj
+
+  # ====================================
+  # Frontend Angular
+  # Para desarrollo: corre localmente con ng serve
+  # Este servicio es opcional para validación
+  # ====================================
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.dev
+    container_name: quickmeet-frontend-dev
+    environment:
+      API_URL: "http://localhost:5000"
+      NODE_ENV: development
+    ports:
+      - "4200:4200"
+    depends_on:
+      - api
+    networks:
+      - quickmeet-network
+    # Comentado: Los devs usan ng serve localmente
+    # Para activar Docker: descomentar
+    # volumes:
+    #   - ../frontend/src:/app/src
+    #   - /app/node_modules
+
+volumes:
+  sqlserver_dev_data:
+    driver: local
+
+networks:
+  quickmeet-network:
+    driver: bridge

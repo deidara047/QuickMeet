@@ -1,0 +1,45 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.vs
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Angular
+dist/
+.angular/
+coverage/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Testing
+.nyc_output/
+
+# OS
+Thumbs.db
+*.log
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+nginx.conf
+
+# Documentation
+README.md
+*.md

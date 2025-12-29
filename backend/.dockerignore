@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vs
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+bin/
+obj/
+dist/
+.angular/
+
+# Dependencies
+node_modules/
+packages/
+
+# Testing
+coverage/
+*.trx
+.nyc_output/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Documentation
+README.md
+*.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.gitpod.yml
+
+# OS
+Thumbs.db
+*.log
+*.DS_Store
+
+descripcion_proyecto.md

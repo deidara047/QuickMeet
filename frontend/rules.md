@@ -1,0 +1,1 @@
+- Prohibido los emojis

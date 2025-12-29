@@ -1,0 +1,11 @@
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\bin\Debug\net10.0\QuickMeet.Core.deps.json
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\bin\Debug\net10.0\QuickMeet.Core.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\bin\Debug\net10.0\QuickMeet.Core.pdb
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\QuickMeet.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\QuickMeet.Core.AssemblyInfoInputs.cache
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\QuickMeet.Core.AssemblyInfo.cs
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\QuickMeet.Core.csproj.CoreCompileInputs.cache
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\QuickMeet.Core.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\refint\QuickMeet.Core.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\QuickMeet.Core.pdb
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\ref\QuickMeet.Core.dll
