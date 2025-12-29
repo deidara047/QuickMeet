@@ -14,13 +14,13 @@
 # ============================================
 # Backend (.NET)
 # ============================================
-backend/bin/
-backend/obj/
-backend/.vs/
-backend/*.user
-backend/*.suo
-backend/packages/
-backend/.nuget/
+**/bin/
+**/obj/
+**/.vs/
+**/*.user
+**/*.suo
+**/packages/
+**/.nuget/
 
 # ============================================
 # Frontend (Angular)
