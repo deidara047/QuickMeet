@@ -1,16 +1,28 @@
 <nav class="bg-white shadow-md sticky top-0 z-100">
   <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-3 cursor-pointer">
+    <!-- Logo Section -->
+    <a routerLink="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
       <app-logo size="sm" [showText]="false"></app-logo>
-      <span class="text-2xl font-semibold text-blue-700">QuickMeet</span>
-    </div>
+      <span class="text-2xl font-semibold text-blue-700 hidden sm:inline">QuickMeet</span>
+    </a>
     
+    <!-- Navigation Menu (hidden on mobile) -->
     <div class="hidden md:flex gap-8 items-center flex-1 ml-12">
-      <a routerLink="/" class="text-gray-700 font-medium hover:text-blue-700 transition-colors duration-300">Inicio</a>
-      <a routerLink="/appointments" class="text-gray-700 font-medium hover:text-blue-700 transition-colors duration-300">Citas</a>
-      <a routerLink="/profile" class="text-gray-700 font-medium hover:text-blue-700 transition-colors duration-300">Perfil</a>
+      <a routerLink="/" class="flex items-center gap-2 text-gray-700 font-medium hover:text-blue-700 transition-colors duration-300">
+        <i class="pi pi-home" style="font-size: 1rem"></i>
+        <span>Inicio</span>
+      </a>
+      <a routerLink="/appointments" class="flex items-center gap-2 text-gray-700 font-medium hover:text-blue-700 transition-colors duration-300">
+        <i class="pi pi-calendar" style="font-size: 1rem"></i>
+        <span>Citas</span>
+      </a>
+      <a routerLink="/profile" class="flex items-center gap-2 text-gray-700 font-medium hover:text-blue-700 transition-colors duration-300">
+        <i class="pi pi-user" style="font-size: 1rem"></i>
+        <span>Perfil</span>
+      </a>
     </div>
     
+    <!-- Logout Button -->
     <div class="flex gap-4 items-center">
       <p-button
         icon="pi pi-sign-out"
@@ -18,8 +30,9 @@
         severity="danger"
         [text]="true"
         [rounded]="true"
-        pTooltip="Salir"
+        pTooltip="Cerrar Sesión"
         tooltipPosition="bottom"
+        class="hover:bg-red-50"
       ></p-button>
     </div>
   </div>
