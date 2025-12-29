@@ -157,3 +157,10 @@ C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTes
 C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\obj\Debug\net10.0\QuickMeet.UnitTests.pdb
 C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\obj\Debug\net10.0\QuickMeet.UnitTests.genruntimeconfig.cache
 C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\obj\Debug\net10.0\ref\QuickMeet.UnitTests.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\bin\Debug\net10.0\Castle.Core.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\bin\Debug\net10.0\FluentAssertions.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\bin\Debug\net10.0\Moq.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\bin\Debug\net10.0\Serilog.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\bin\Debug\net10.0\BCrypt.Net-Next.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\bin\Debug\net10.0\Microsoft.Bcl.TimeProvider.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\tests\QuickMeet.UnitTests\bin\Debug\net10.0\Microsoft.Extensions.Configuration.dll

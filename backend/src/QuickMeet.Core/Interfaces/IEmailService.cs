@@ -1,0 +1,7 @@
+namespace QuickMeet.Core.Interfaces;
+
+public interface IEmailService
+{
+    Task SendEmailVerificationAsync(string email, string username, string token);
+    Task SendWelcomeEmailAsync(string email, string fullName);
+}

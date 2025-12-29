@@ -9,3 +9,4 @@ C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\
 C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\refint\QuickMeet.Core.dll
 C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\QuickMeet.Core.pdb
 C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\ref\QuickMeet.Core.dll
+C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend\src\QuickMeet.Core\obj\Debug\net10.0\QuickMeet.Core.csproj.AssemblyReference.cache

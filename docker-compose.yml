@@ -1,39 +1,15 @@
 version: '3.8'
 
-# Docker Compose PRINCIPAL para desarrollo
-# Devs: NO necesitan ejecutar esto constantemente
-# Solo para validar que todo funciona en contenedores
-#
+# Docker Compose PRINCIPAL para desarrollo local
 # USO:
 #   docker-compose up
 #
-# Esto levanta:
-#   - SQL Server (BD desarrollo)
-#   - API .NET (opcional - devs corren localmente)
-#   - Frontend Angular (opcional - devs corren con ng serve)
+# NOTA: SQL Server se ejecuta en local (Windows)
+# Devs corren aplicación localmente:
+#   - cd backend && dotnet run --project src/QuickMeet.API
+#   - cd frontend && npm start
 
 services:
-  sql-server:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: quickmeet-sqlserver
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "Develop123!@"
-      MSSQL_PID: "Express"
-    ports:
-      - "1433:1433"
-    volumes:
-      - sqlserver_dev:/var/opt/mssql
-      - ./backend/src/QuickMeet.Infrastructure/Data/InitScripts:/docker-entrypoint-initdb.d
-    networks:
-      - quickmeet
-    healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Develop123!@" -Q "SELECT 1" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   # ====================================
   # API Backend - OPCIONAL
   # Los devs corren esto LOCALMENTE:
@@ -48,13 +24,9 @@ services:
   #   environment:
   #     ASPNETCORE_ENVIRONMENT: Development
   #     ASPNETCORE_URLS: "http://+:8080"
-  #     ConnectionStrings__DefaultConnection: "Server=sql-server,1433;Database=QuickMeet;User Id=sa;Password=Develop123!@;TrustServerCertificate=true;"
-  #     JWT_Secret: "dev-secret-key-change-in-production-min-32-chars-needed"
+  #     ConnectionStrings__DefaultConnection: "Server=sql-server,1433;Database=QuickMeet;User Id=quickmeet_app;Password=QuickMeet$App.Secure2025!;TrustServerCertificate=true;"
   #   ports:
   #     - "5000:8080"
-  #   depends_on:
-  #     sql-server:
-  #       condition: service_healthy
   #   networks:
   #     - quickmeet
   #   # Hot reload: descomentar si quieren cambios en tiempo real
@@ -75,7 +47,7 @@ services:
   #     dockerfile: Dockerfile.dev
   #   container_name: quickmeet-frontend
   #   environment:
-  #     API_URL: "http://localhost:5000"
+  #     API_URL: "http://localhost:5173"
   #   ports:
   #     - "4200:4200"
   #   networks:
@@ -84,10 +56,6 @@ services:
   #   # volumes:
   #   #   - ./frontend/src:/app/src
   #   #   - /app/node_modules
-
-volumes:
-  sqlserver_dev:
-    driver: local
 
 networks:
   quickmeet:

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("QuickMeet.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+96c50a9733c02c37c2981bc9e92a0dd0e739e747")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d6a405b09c07bb3a29e1c31a9f5d5f0fafbdf91c")]
 [assembly: System.Reflection.AssemblyProductAttribute("QuickMeet.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("QuickMeet.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
