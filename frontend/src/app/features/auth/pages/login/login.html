@@ -1,0 +1,73 @@
+<div class="flex justify-center items-center min-h-[calc(100vh-70px)] bg-gradient-to-br from-blue-50 to-gray-300 px-4">
+  <div class="bg-white rounded-lg shadow-xl p-12 w-full max-w-md">
+    <!-- Logo Section -->
+    <div class="flex justify-center mb-8">
+      <app-logo size="lg" [showText]="true"></app-logo>
+    </div>
+
+    <!-- Title and Subtitle -->
+    <h1 class="text-3xl font-bold text-gray-800 text-center mb-2">Inicia Sesión</h1>
+    <p class="text-gray-600 text-center text-sm mb-8">Accede a tu cuenta para agendar citas</p>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Email Field -->
+      <div class="space-y-2">
+        <label for="email" class="block text-sm font-medium text-gray-700">
+          <i class="pi pi-envelope mr-2" style="color: #4187a5"></i>Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="correo@ejemplo.com"
+          pInputText
+          class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched) {
+          <p class="text-xs text-red-500 mt-1 flex items-center">
+            <i class="pi pi-exclamation-circle mr-1" style="font-size: 0.75rem"></i>
+            Ingresa un email válido
+          </p>
+        }
+      </div>
+
+      <!-- Password Field -->
+      <div class="space-y-2">
+        <label for="password" class="block text-sm font-medium text-gray-700">
+          <i class="pi pi-lock mr-2" style="color: #4187a5"></i>Contraseña
+        </label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Tu contraseña"
+          pInputText
+          class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        @if (loginForm.get('password')?.hasError('minlength') && loginForm.get('password')?.touched) {
+          <p class="text-xs text-red-500 mt-1 flex items-center">
+            <i class="pi pi-exclamation-circle mr-1" style="font-size: 0.75rem"></i>
+            Mínimo 6 caracteres
+          </p>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <p-button
+        type="submit"
+        label="Inicia Sesión"
+        [disabled]="!loginForm.valid"
+        [loading]="isLoading"
+        [icon]="!isLoading ? 'pi pi-sign-in' : ''"
+        class="w-full"
+      ></p-button>
+    </form>
+
+    <!-- Sign Up Link -->
+    <p class="text-center text-sm text-gray-600 mt-6">
+      ¿No tienes cuenta? 
+      <a routerLink="/register" class="text-blue-600 font-medium hover:text-blue-700 transition-colors duration-300">Regístrate aquí</a>
+    </p>
+  </div>
+</div>

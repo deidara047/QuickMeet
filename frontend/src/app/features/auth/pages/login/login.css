@@ -1,0 +1,32 @@
+
+
+.form-control {
+  width: 100%;
+}
+
+.signup-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.signup-link a {
+  color: #4B8BA8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    padding: 2rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+}

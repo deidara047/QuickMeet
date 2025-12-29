@@ -1,0 +1,26 @@
+<nav class="bg-white shadow-md sticky top-0 z-100">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3 cursor-pointer">
+      <app-logo size="sm" [showText]="false"></app-logo>
+      <span class="text-2xl font-semibold text-blue-700">QuickMeet</span>
+    </div>
+    
+    <div class="hidden md:flex gap-8 items-center flex-1 ml-12">
+      <a routerLink="/" class="text-gray-700 font-medium hover:text-blue-700 transition-colors duration-300">Inicio</a>
+      <a routerLink="/appointments" class="text-gray-700 font-medium hover:text-blue-700 transition-colors duration-300">Citas</a>
+      <a routerLink="/profile" class="text-gray-700 font-medium hover:text-blue-700 transition-colors duration-300">Perfil</a>
+    </div>
+    
+    <div class="flex gap-4 items-center">
+      <p-button
+        icon="pi pi-sign-out"
+        (onClick)="onLogout()"
+        severity="danger"
+        [text]="true"
+        [rounded]="true"
+        pTooltip="Salir"
+        tooltipPosition="bottom"
+      ></p-button>
+    </div>
+  </div>
+</nav>

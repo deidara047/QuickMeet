@@ -1,0 +1,10 @@
+<div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity duration-300" [ngClass]="getSizeClass()">
+  <img 
+    [src]="logoPath" 
+    [alt]="altText"
+    class="w-full h-full object-contain"
+  />
+  @if (showText) {
+    <span class="font-bold text-xl whitespace-nowrap">{{ appName }}</span>
+  }
+</div>
