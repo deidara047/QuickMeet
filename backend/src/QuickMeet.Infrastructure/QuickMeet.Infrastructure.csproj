@@ -19,4 +19,8 @@
     <ProjectReference Include="../QuickMeet.Core/QuickMeet.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Serilog" Version="4.1.0" />
+  </ItemGroup>
+
 </Project>
