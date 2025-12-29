@@ -4,6 +4,8 @@ import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { CardModule } from 'primeng/card';
 import { LogoComponent } from '../../../../shared/components/logo/logo';
 import { loginSchema, type LoginFormData } from '../../schemas/auth.schema';
 import { validateWithZod } from '../../../../shared/utils/form-validation.utils';
@@ -17,6 +19,8 @@ import { validateWithZod } from '../../../../shared/utils/form-validation.utils'
     RouterModule,
     ButtonModule,
     InputTextModule,
+    FloatLabelModule,
+    CardModule,
     LogoComponent
   ],
   templateUrl: './login.html',
