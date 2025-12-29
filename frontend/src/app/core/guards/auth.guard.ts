@@ -17,7 +17,7 @@ export class AuthGuard {
       return true;
     }
 
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/login']);
     return false;
   }
 }
@@ -30,6 +30,6 @@ export const authGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/auth/login']);
+  router.navigate(['/login']);
   return false;
 };

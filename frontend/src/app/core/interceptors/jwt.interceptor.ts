@@ -21,7 +21,7 @@ export class JwtInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const token = this.authService.getAccessToken();
 
-    if (token && !request.url.includes('/auth/login') && !request.url.includes('/auth/register')) {
+    if (token && !request.url.includes('/login') && !request.url.includes('/register')) {
       request = request.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -33,7 +33,7 @@ export class JwtInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
           this.authService.logout();
-          this.router.navigate(['/auth/login']);
+          this.router.navigate(['/login']);
         }
         return throwError(() => error);
       })

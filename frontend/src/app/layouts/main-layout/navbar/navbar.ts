@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenubarModule } from 'primeng/menubar';
 import { LogoComponent } from '../../../shared/components/logo/logo';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -19,21 +20,27 @@ export class NavbarComponent {
     {
       label: 'Inicio',
       icon: 'pi pi-home',
-      routerLink: '/'
+      routerLink: '/dashboard'
     },
     {
       label: 'Citas',
       icon: 'pi pi-calendar',
-      routerLink: '/appointments'
+      routerLink: '/dashboard/appointments'
     },
     {
       label: 'Perfil',
       icon: 'pi pi-user',
-      routerLink: '/profile'
+      routerLink: '/dashboard/profile'
     }
   ];
 
-  onLogout() {
-    console.log('Logout clicked');
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  onLogout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

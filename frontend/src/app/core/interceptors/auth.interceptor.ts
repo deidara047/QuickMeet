@@ -13,16 +13,21 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService) {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    const token = this.authService.getAccessToken();
+    const publicEndpoints = ['/auth/register', '/auth/login', '/auth/verify-email'];
+    const isPublicEndpoint = publicEndpoints.some(endpoint => request.url.includes(endpoint));
 
-    if (token) {
-      request = request.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+    if (!isPublicEndpoint) {
+      const token = this.authService.getAccessToken();
+      if (token) {
+        request = request.clone({
+          setHeaders: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      }
     }
 
     return next.handle(request);
   }
 }
+

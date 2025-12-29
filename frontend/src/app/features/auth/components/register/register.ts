@@ -90,7 +90,7 @@ export class RegisterComponent implements OnInit {
           detail: 'Cuenta creada. Por favor verifica tu email.',
           life: 3000
         });
-        setTimeout(() => this.router.navigate(['/auth/login']), 2000);
+        setTimeout(() => this.router.navigate(['/login']), 2000);
       },
       error: (err) => {
         this.loading = false;
