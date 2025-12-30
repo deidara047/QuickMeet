@@ -25,6 +25,19 @@ public class AuthenticationService : IAuthenticationService
         string fullName,
         string password)
     {
+        // Validate inputs
+        if (string.IsNullOrWhiteSpace(email))
+            return (false, "Email is required", null);
+
+        if (string.IsNullOrWhiteSpace(username))
+            return (false, "Username is required", null);
+
+        if (string.IsNullOrWhiteSpace(fullName))
+            return (false, "Full name is required", null);
+
+        if (string.IsNullOrWhiteSpace(password))
+            return (false, "Password is required", null);
+
         if (await _providerRepository.ExistsByEmailAsync(email))
             return (false, "Email already registered", null);
 
@@ -64,6 +77,13 @@ public class AuthenticationService : IAuthenticationService
         string email,
         string password)
     {
+        // Validate inputs
+        if (string.IsNullOrWhiteSpace(email))
+            return (false, "Email is required", null);
+
+        if (string.IsNullOrWhiteSpace(password))
+            return (false, "Password is required", null);
+
         var provider = await _providerRepository.GetByEmailAsync(email);
         
         if (provider == null)

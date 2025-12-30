@@ -13,6 +13,18 @@ namespace QuickMeet.UnitTests.Services;
 /// </summary>
 public class AuthenticationServiceTests
 {
+    #region Test Data Constants
+    
+    private const string ValidEmail = "test@example.com";
+    private const string ValidUsername = "testuser";
+    private const string ValidFullName = "Test User";
+    private const string ValidPassword = "ValidPassword123!@";
+    private const string HashedPassword = "hashed_password";
+    private const string AccessToken = "access_token";
+    private const string RefreshToken = "refresh_token";
+    
+    #endregion
+
     private readonly Mock<IProviderRepository> _mockProviderRepository;
     private readonly Mock<IPasswordHashingService> _mockPasswordHasher;
     private readonly Mock<ITokenService> _mockTokenService;
@@ -31,99 +43,57 @@ public class AuthenticationServiceTests
         );
     }
 
-    #region Register Tests
+    #region Register Tests - Happy Path
 
     [Fact]
     public async Task RegisterAsync_ValidInput_ReturnsSuccess()
     {
         // Arrange
-        var email = "newuser@example.com";
-        var username = "newuser";
-        var fullName = "New User";
-        var password = "ValidPassword123!@";
-
-        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(email))
+        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(ValidEmail))
             .ReturnsAsync(false);
-        _mockProviderRepository.Setup(r => r.ExistsByUsernameAsync(username))
+        _mockProviderRepository.Setup(r => r.ExistsByUsernameAsync(ValidUsername))
             .ReturnsAsync(false);
-        _mockPasswordHasher.Setup(h => h.HashPassword(password))
-            .Returns("hashed_password");
+        _mockPasswordHasher.Setup(h => h.HashPassword(ValidPassword))
+            .Returns(HashedPassword);
         _mockTokenService.Setup(t => t.GenerateAccessToken(It.IsAny<int>(), It.IsAny<string>()))
-            .Returns("access_token");
+            .Returns(AccessToken);
         _mockTokenService.Setup(t => t.GenerateRefreshToken())
-            .Returns("refresh_token");
+            .Returns(RefreshToken);
 
         // Act
-        var result = await _service.RegisterAsync(email, username, fullName, password);
+        var result = await _service.RegisterAsync(ValidEmail, ValidUsername, ValidFullName, ValidPassword);
 
         // Assert
         Assert.True(result.Success);
         Assert.NotNull(result.Result);
-        Assert.Equal(email, result.Result.Email);
-        Assert.Equal(username, result.Result.Username);
-        Assert.Equal(fullName, result.Result.FullName);
-        Assert.Equal("access_token", result.Result.AccessToken);
-        Assert.Equal("refresh_token", result.Result.RefreshToken);
-    }
-
-    [Fact]
-    public async Task RegisterAsync_DuplicateEmail_ReturnsFailure()
-    {
-        // Arrange
-        var email = "existing@example.com";
-        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(email))
-            .ReturnsAsync(true);
-
-        // Act
-        var result = await _service.RegisterAsync(email, "newuser", "User", "ValidPassword123!@");
-
-        // Assert
-        Assert.False(result.Success);
-        Assert.Contains("Email already registered", result.Message);
-        Assert.Null(result.Result);
-    }
-
-    [Fact]
-    public async Task RegisterAsync_DuplicateUsername_ReturnsFailure()
-    {
-        // Arrange
-        var username = "existing";
-        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(It.IsAny<string>()))
-            .ReturnsAsync(false);
-        _mockProviderRepository.Setup(r => r.ExistsByUsernameAsync(username))
-            .ReturnsAsync(true);
-
-        // Act
-        var result = await _service.RegisterAsync("new@example.com", username, "User", "ValidPassword123!@");
-
-        // Assert
-        Assert.False(result.Success);
-        Assert.Contains("Username already taken", result.Message);
-        Assert.Null(result.Result);
+        Assert.Equal(ValidEmail, result.Result.Email);
+        Assert.Equal(ValidUsername, result.Result.Username);
+        Assert.Equal(ValidFullName, result.Result.FullName);
+        Assert.Equal(AccessToken, result.Result.AccessToken);
+        Assert.Equal(RefreshToken, result.Result.RefreshToken);
     }
 
     [Fact]
     public async Task RegisterAsync_ValidInput_HashesPassword()
     {
         // Arrange
-        var password = "MySecurePassword123!@";
         _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(It.IsAny<string>()))
             .ReturnsAsync(false);
         _mockProviderRepository.Setup(r => r.ExistsByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(false);
-        _mockPasswordHasher.Setup(h => h.HashPassword(password))
-            .Returns("hashed_pass_xyz");
+        _mockPasswordHasher.Setup(h => h.HashPassword(ValidPassword))
+            .Returns(HashedPassword);
         _mockTokenService.Setup(t => t.GenerateAccessToken(It.IsAny<int>(), It.IsAny<string>()))
-            .Returns("token");
+            .Returns(AccessToken);
         _mockTokenService.Setup(t => t.GenerateRefreshToken())
-            .Returns("refresh");
+            .Returns(RefreshToken);
 
         // Act
-        await _service.RegisterAsync("test@example.com", "testuser", "Test User", password);
+        await _service.RegisterAsync(ValidEmail, ValidUsername, ValidFullName, ValidPassword);
 
         // Assert
         _mockPasswordHasher.Verify(
-            h => h.HashPassword(password),
+            h => h.HashPassword(ValidPassword),
             Times.Once,
             "Password should be hashed before storing"
         );
@@ -138,21 +108,21 @@ public class AuthenticationServiceTests
         _mockProviderRepository.Setup(r => r.ExistsByUsernameAsync(It.IsAny<string>()))
             .ReturnsAsync(false);
         _mockPasswordHasher.Setup(h => h.HashPassword(It.IsAny<string>()))
-            .Returns("hash");
+            .Returns(HashedPassword);
         _mockTokenService.Setup(t => t.GenerateAccessToken(It.IsAny<int>(), It.IsAny<string>()))
-            .Returns("token");
+            .Returns(AccessToken);
         _mockTokenService.Setup(t => t.GenerateRefreshToken())
-            .Returns("refresh");
+            .Returns(RefreshToken);
 
         // Act
-        await _service.RegisterAsync("test@example.com", "testuser", "Test User", "ValidPassword123!@");
+        await _service.RegisterAsync(ValidEmail, ValidUsername, ValidFullName, ValidPassword);
 
         // Assert
         _mockProviderRepository.Verify(
             r => r.AddAsync(It.Is<Provider>(p =>
-                p.Email == "test@example.com" &&
-                p.Username == "testuser" &&
-                p.FullName == "Test User" &&
+                p.Email == ValidEmail &&
+                p.Username == ValidUsername &&
+                p.FullName == ValidFullName &&
                 p.Status == ProviderStatus.PendingVerification
             )),
             Times.Once,
@@ -162,7 +132,151 @@ public class AuthenticationServiceTests
 
     #endregion
 
-    #region Login Tests
+    #region Register Tests - Duplicates
+
+    [Fact]
+    public async Task RegisterAsync_DuplicateEmail_ReturnsFailure()
+    {
+        // Arrange
+        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(ValidEmail))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _service.RegisterAsync(ValidEmail, ValidUsername, ValidFullName, ValidPassword);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains("Email already registered", result.Message);
+        Assert.Null(result.Result);
+    }
+
+    [Fact]
+    public async Task RegisterAsync_DuplicateUsername_ReturnsFailure()
+    {
+        // Arrange
+        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(It.IsAny<string>()))
+            .ReturnsAsync(false);
+        _mockProviderRepository.Setup(r => r.ExistsByUsernameAsync(ValidUsername))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _service.RegisterAsync(ValidEmail, ValidUsername, ValidFullName, ValidPassword);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Contains("Username already taken", result.Message);
+        Assert.Null(result.Result);
+    }
+
+    #endregion
+
+    #region Register Tests - Edge Cases
+
+    [Theory]
+    [InlineData(null, "user", "Name", "Pass123!@")]
+    [InlineData("", "user", "Name", "Pass123!@")]
+    [InlineData("   ", "user", "Name", "Pass123!@")]
+    public async Task RegisterAsync_NullOrEmptyEmail_ReturnsFailure(
+        string email, string username, string fullName, string password)
+    {
+        // Act
+        var result = await _service.RegisterAsync(email, username, fullName, password);
+
+        // Assert
+        Assert.False(result.Success);
+        
+        // No debe llamar al repositorio con email inválido
+        _mockProviderRepository.Verify(
+            r => r.ExistsByEmailAsync(It.IsAny<string>()),
+            Times.Never,
+            "Should not check repository for null/empty email"
+        );
+    }
+
+    [Theory]
+    [InlineData("email@test.com", null, "Name", "Pass123!@")]
+    [InlineData("email@test.com", "", "Name", "Pass123!@")]
+    [InlineData("email@test.com", "   ", "Name", "Pass123!@")]
+    public async Task RegisterAsync_NullOrEmptyUsername_ReturnsFailure(
+        string email, string username, string fullName, string password)
+    {
+        // Act
+        var result = await _service.RegisterAsync(email, username, fullName, password);
+
+        // Assert
+        Assert.False(result.Success);
+        
+        // No debe llamar al repositorio con username inválido
+        _mockProviderRepository.Verify(
+            r => r.ExistsByUsernameAsync(It.IsAny<string>()),
+            Times.Never,
+            "Should not check repository for null/empty username"
+        );
+    }
+
+    #endregion
+
+    #region Register Tests - Operation Order
+
+    [Fact]
+    public async Task RegisterAsync_DuplicateEmail_DoesNotHashPassword()
+    {
+        // Arrange
+        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(ValidEmail))
+            .ReturnsAsync(true);
+
+        // Act
+        await _service.RegisterAsync(ValidEmail, ValidUsername, ValidFullName, ValidPassword);
+
+        // Assert - NO debe intentar hashear si el email ya existe
+        _mockPasswordHasher.Verify(
+            h => h.HashPassword(It.IsAny<string>()),
+            Times.Never,
+            "Should not hash password if email already exists"
+        );
+    }
+
+    [Fact]
+    public async Task RegisterAsync_DuplicateEmail_DoesNotCallRepositoryAdd()
+    {
+        // Arrange
+        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(ValidEmail))
+            .ReturnsAsync(true);
+
+        // Act
+        await _service.RegisterAsync(ValidEmail, ValidUsername, ValidFullName, ValidPassword);
+
+        // Assert - NO debe intentar guardar si el email ya existe
+        _mockProviderRepository.Verify(
+            r => r.AddAsync(It.IsAny<Provider>()),
+            Times.Never,
+            "Should not save provider if email already exists"
+        );
+    }
+
+    [Fact]
+    public async Task RegisterAsync_DuplicateUsername_DoesNotHashPassword()
+    {
+        // Arrange
+        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(It.IsAny<string>()))
+            .ReturnsAsync(false);
+        _mockProviderRepository.Setup(r => r.ExistsByUsernameAsync(ValidUsername))
+            .ReturnsAsync(true);
+
+        // Act
+        await _service.RegisterAsync(ValidEmail, ValidUsername, ValidFullName, ValidPassword);
+
+        // Assert - NO debe hashear si el username ya existe
+        _mockPasswordHasher.Verify(
+            h => h.HashPassword(It.IsAny<string>()),
+            Times.Never,
+            "Should not hash password if username already exists"
+        );
+    }
+
+    #endregion
+
+    #region Login Tests - Happy Path
 
     [Fact]
     public async Task LoginAsync_ValidCredentials_ReturnsSuccess()
@@ -171,33 +285,74 @@ public class AuthenticationServiceTests
         var provider = new Provider
         {
             Id = 1,
-            Email = "user@example.com",
-            Username = "testuser",
-            FullName = "Test User",
-            PasswordHash = "hashed_password",
+            Email = ValidEmail,
+            Username = ValidUsername,
+            FullName = ValidFullName,
+            PasswordHash = HashedPassword,
             Status = ProviderStatus.Active
         };
 
-        _mockProviderRepository.Setup(r => r.GetByEmailAsync("user@example.com"))
+        _mockProviderRepository.Setup(r => r.GetByEmailAsync(ValidEmail))
             .ReturnsAsync(provider);
-        _mockPasswordHasher.Setup(h => h.VerifyPassword("ValidPassword123!@", "hashed_password"))
+        _mockPasswordHasher.Setup(h => h.VerifyPassword(ValidPassword, HashedPassword))
             .Returns(true);
         _mockTokenService.Setup(t => t.GenerateAccessToken(provider.Id, provider.Email))
-            .Returns("access_token");
+            .Returns(AccessToken);
         _mockTokenService.Setup(t => t.GenerateRefreshToken())
-            .Returns("refresh_token");
+            .Returns(RefreshToken);
 
         // Act
-        var result = await _service.LoginAsync("user@example.com", "ValidPassword123!@");
+        var result = await _service.LoginAsync(ValidEmail, ValidPassword);
 
         // Assert
         Assert.True(result.Success);
         Assert.NotNull(result.Result);
-        Assert.Equal("user@example.com", result.Result.Email);
-        Assert.Equal("testuser", result.Result.Username);
-        Assert.Equal("access_token", result.Result.AccessToken);
-        Assert.Equal("refresh_token", result.Result.RefreshToken);
+        Assert.Equal(ValidEmail, result.Result.Email);
+        Assert.Equal(ValidUsername, result.Result.Username);
+        Assert.Equal(AccessToken, result.Result.AccessToken);
+        Assert.Equal(RefreshToken, result.Result.RefreshToken);
     }
+
+    [Fact]
+    public async Task LoginAsync_ValidCredentials_GeneratesTokens()
+    {
+        // Arrange
+        var provider = new Provider
+        {
+            Id = 1,
+            Email = ValidEmail,
+            Username = ValidUsername,
+            FullName = ValidFullName,
+            PasswordHash = HashedPassword,
+            Status = ProviderStatus.Active
+        };
+
+        _mockProviderRepository.Setup(r => r.GetByEmailAsync(ValidEmail))
+            .ReturnsAsync(provider);
+        _mockPasswordHasher.Setup(h => h.VerifyPassword(ValidPassword, HashedPassword))
+            .Returns(true);
+        _mockTokenService.Setup(t => t.GenerateAccessToken(provider.Id, provider.Email))
+            .Returns(AccessToken);
+        _mockTokenService.Setup(t => t.GenerateRefreshToken())
+            .Returns(RefreshToken);
+
+        // Act
+        await _service.LoginAsync(ValidEmail, ValidPassword);
+
+        // Assert
+        _mockTokenService.Verify(
+            t => t.GenerateAccessToken(provider.Id, provider.Email),
+            Times.Once
+        );
+        _mockTokenService.Verify(
+            t => t.GenerateRefreshToken(),
+            Times.Once
+        );
+    }
+
+    #endregion
+
+    #region Login Tests - Failures
 
     [Fact]
     public async Task LoginAsync_NonExistentUser_ReturnsFailure()
@@ -207,7 +362,7 @@ public class AuthenticationServiceTests
             .ReturnsAsync((Provider?)null);
 
         // Act
-        var result = await _service.LoginAsync("nonexistent@example.com", "password");
+        var result = await _service.LoginAsync(ValidEmail, ValidPassword);
 
         // Assert
         Assert.False(result.Success);
@@ -222,18 +377,18 @@ public class AuthenticationServiceTests
         var provider = new Provider
         {
             Id = 2,
-            Email = "user@example.com",
-            PasswordHash = "hashed_correct_password",
+            Email = ValidEmail,
+            PasswordHash = HashedPassword,
             Status = ProviderStatus.Active
         };
 
-        _mockProviderRepository.Setup(r => r.GetByEmailAsync("user@example.com"))
+        _mockProviderRepository.Setup(r => r.GetByEmailAsync(ValidEmail))
             .ReturnsAsync(provider);
-        _mockPasswordHasher.Setup(h => h.VerifyPassword("WrongPassword123!@", "hashed_correct_password"))
+        _mockPasswordHasher.Setup(h => h.VerifyPassword("WrongPassword123!@", HashedPassword))
             .Returns(false);
 
         // Act
-        var result = await _service.LoginAsync("user@example.com", "WrongPassword123!@");
+        var result = await _service.LoginAsync(ValidEmail, "WrongPassword123!@");
 
         // Assert
         Assert.False(result.Success);
@@ -247,18 +402,18 @@ public class AuthenticationServiceTests
         var provider = new Provider
         {
             Id = 3,
-            Email = "suspended@example.com",
-            PasswordHash = "hashed_password",
+            Email = ValidEmail,
+            PasswordHash = HashedPassword,
             Status = ProviderStatus.Suspended
         };
 
-        _mockProviderRepository.Setup(r => r.GetByEmailAsync("suspended@example.com"))
+        _mockProviderRepository.Setup(r => r.GetByEmailAsync(ValidEmail))
             .ReturnsAsync(provider);
         _mockPasswordHasher.Setup(h => h.VerifyPassword(It.IsAny<string>(), It.IsAny<string>()))
             .Returns(true);
 
         // Act
-        var result = await _service.LoginAsync("suspended@example.com", "password");
+        var result = await _service.LoginAsync(ValidEmail, ValidPassword);
 
         // Assert
         Assert.False(result.Success);
@@ -272,67 +427,97 @@ public class AuthenticationServiceTests
         var provider = new Provider
         {
             Id = 4,
-            Email = "pending@example.com",
-            Username = "pendinguser",
-            FullName = "Pending User",
-            PasswordHash = "hashed_password",
+            Email = ValidEmail,
+            Username = ValidUsername,
+            FullName = ValidFullName,
+            PasswordHash = HashedPassword,
             Status = ProviderStatus.PendingVerification
         };
 
-        _mockProviderRepository.Setup(r => r.GetByEmailAsync("pending@example.com"))
+        _mockProviderRepository.Setup(r => r.GetByEmailAsync(ValidEmail))
             .ReturnsAsync(provider);
-        _mockPasswordHasher.Setup(h => h.VerifyPassword("ValidPassword123!@", "hashed_password"))
+        _mockPasswordHasher.Setup(h => h.VerifyPassword(ValidPassword, HashedPassword))
             .Returns(true);
         _mockTokenService.Setup(t => t.GenerateAccessToken(provider.Id, provider.Email))
-            .Returns("access_token");
+            .Returns(AccessToken);
         _mockTokenService.Setup(t => t.GenerateRefreshToken())
-            .Returns("refresh_token");
+            .Returns(RefreshToken);
 
         // Act
-        var result = await _service.LoginAsync("pending@example.com", "ValidPassword123!@");
+        var result = await _service.LoginAsync(ValidEmail, ValidPassword);
 
         // Assert
         Assert.True(result.Success);
         Assert.NotNull(result.Result);
     }
 
+    #endregion
+
+    #region Login Tests - Operation Order
+
     [Fact]
-    public async Task LoginAsync_ValidCredentials_GeneratesTokens()
+    public async Task LoginAsync_IncorrectPassword_DoesNotGenerateTokens()
     {
         // Arrange
         var provider = new Provider
         {
             Id = 5,
-            Email = "user@example.com",
-            Username = "user",
-            FullName = "User",
-            PasswordHash = "hash",
+            Email = ValidEmail,
+            PasswordHash = HashedPassword,
             Status = ProviderStatus.Active
         };
 
-        _mockProviderRepository.Setup(r => r.GetByEmailAsync("user@example.com"))
+        _mockProviderRepository.Setup(r => r.GetByEmailAsync(ValidEmail))
             .ReturnsAsync(provider);
-        _mockPasswordHasher.Setup(h => h.VerifyPassword(It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(true);
-        _mockTokenService.Setup(t => t.GenerateAccessToken(provider.Id, provider.Email))
-            .Returns("new_access_token");
-        _mockTokenService.Setup(t => t.GenerateRefreshToken())
-            .Returns("new_refresh_token");
+        _mockPasswordHasher.Setup(h => h.VerifyPassword("WrongPassword", HashedPassword))
+            .Returns(false);
 
         // Act
-        var result = await _service.LoginAsync("user@example.com", "password");
+        await _service.LoginAsync(ValidEmail, "WrongPassword");
 
-        // Assert
+        // Assert - NO debe generar tokens con password incorrecto
         _mockTokenService.Verify(
-            t => t.GenerateAccessToken(provider.Id, provider.Email),
-            Times.Once
+            t => t.GenerateAccessToken(It.IsAny<int>(), It.IsAny<string>()),
+            Times.Never,
+            "Should not generate access token with wrong password"
         );
         _mockTokenService.Verify(
             t => t.GenerateRefreshToken(),
-            Times.Once
+            Times.Never,
+            "Should not generate refresh token with wrong password"
         );
-        Assert.Equal("new_access_token", result.Result?.AccessToken);
-        Assert.Equal("new_refresh_token", result.Result?.RefreshToken);
+    }
+
+    [Fact]
+    public async Task LoginAsync_SuspendedAccount_DoesNotGenerateTokens()
+    {
+        // Arrange
+        var provider = new Provider
+        {
+            Id = 6,
+            Email = ValidEmail,
+            PasswordHash = HashedPassword,
+            Status = ProviderStatus.Suspended
+        };
+
+        _mockProviderRepository.Setup(r => r.GetByEmailAsync(ValidEmail))
+            .ReturnsAsync(provider);
+        _mockPasswordHasher.Setup(h => h.VerifyPassword(ValidPassword, HashedPassword))
+            .Returns(true);
+
+        // Act
+        await _service.LoginAsync(ValidEmail, ValidPassword);
+
+        // Assert - NO debe generar tokens para cuenta suspendida
+        _mockTokenService.Verify(
+            t => t.GenerateAccessToken(It.IsAny<int>(), It.IsAny<string>()),
+            Times.Never,
+            "Should not generate tokens for suspended account"
+        );
+        _mockTokenService.Verify(
+            t => t.GenerateRefreshToken(),
+            Times.Never
+        );
     }
 
     #endregion
@@ -343,11 +528,11 @@ public class AuthenticationServiceTests
     public async Task EmailExistsAsync_ExistingEmail_ReturnsTrue()
     {
         // Arrange
-        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync("existing@example.com"))
+        _mockProviderRepository.Setup(r => r.ExistsByEmailAsync(ValidEmail))
             .ReturnsAsync(true);
 
         // Act
-        var exists = await _service.EmailExistsAsync("existing@example.com");
+        var exists = await _service.EmailExistsAsync(ValidEmail);
 
         // Assert
         Assert.True(exists);
@@ -371,11 +556,11 @@ public class AuthenticationServiceTests
     public async Task UsernameExistsAsync_ExistingUsername_ReturnsTrue()
     {
         // Arrange
-        _mockProviderRepository.Setup(r => r.ExistsByUsernameAsync("existing"))
+        _mockProviderRepository.Setup(r => r.ExistsByUsernameAsync(ValidUsername))
             .ReturnsAsync(true);
 
         // Act
-        var exists = await _service.UsernameExistsAsync("existing");
+        var exists = await _service.UsernameExistsAsync(ValidUsername);
 
         // Assert
         Assert.True(exists);
