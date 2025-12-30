@@ -14,6 +14,10 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageReference Include="Moq" Version="4.20.71" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
+    <PackageReference Include="FluentValidation" Version="11.10.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/QuickMeet.Core/QuickMeet.Core.csproj" />
     <ProjectReference Include="../../src/QuickMeet.Infrastructure/QuickMeet.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/QuickMeet.API/QuickMeet.API.csproj" />
   </ItemGroup>
 
 </Project>

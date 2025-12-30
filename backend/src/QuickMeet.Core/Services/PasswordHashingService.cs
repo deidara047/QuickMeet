@@ -12,6 +12,18 @@ public class PasswordHashingService : IPasswordHashingService
 
     public bool VerifyPassword(string password, string hash)
     {
-        return BC.Verify(password, hash);
+        if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hash))
+        {
+            return false;
+        }
+        
+        try
+        {
+            return BC.Verify(password, hash);
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

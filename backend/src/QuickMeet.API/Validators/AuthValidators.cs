@@ -1,6 +1,5 @@
 using FluentValidation;
 using QuickMeet.API.DTOs.Auth;
-using System.Text.RegularExpressions;
 
 namespace QuickMeet.API.Validators;
 

@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using QuickMeet.Infrastructure.Data;
+using QuickMeet.Infrastructure.Repositories;
 using QuickMeet.Core.Interfaces;
 using QuickMeet.Core.Services;
 using QuickMeet.API.Validators;
@@ -53,6 +54,7 @@ builder.Services.AddDbContext<QuickMeetDbContext>(options =>
         sqlOptions.MigrationsAssembly("QuickMeet.Infrastructure")));
 
 builder.Services.AddScoped<IQuickMeetDbContext>(sp => sp.GetRequiredService<QuickMeetDbContext>());
+builder.Services.AddScoped<IProviderRepository, ProviderRepository>();
 builder.Services.AddScoped<IPasswordHashingService, PasswordHashingService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
