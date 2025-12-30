@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -16,6 +16,11 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './navbar.css',
 })
 export class NavbarComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  isAuthenticated$ = this.authService.isAuthenticated$;
+
   navItems: MenuItem[] = [
     {
       label: 'Inicio',
@@ -33,11 +38,6 @@ export class NavbarComponent {
       routerLink: '/dashboard/profile'
     }
   ];
-
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
 
   onLogout(): void {
     this.authService.logout();

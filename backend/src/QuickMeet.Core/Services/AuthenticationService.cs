@@ -36,24 +36,21 @@ public class AuthenticationService : IAuthenticationService
         
         var provider = new Provider
         {
-            Id = Guid.NewGuid(),
             Email = email,
             Username = username,
             FullName = fullName,
             PasswordHash = passwordHash,
-            Status = ProviderStatus.PendingVerification,
-            CreatedAt = DateTime.UtcNow
+            Status = ProviderStatus.PendingVerification
         };
 
         _dbContext.Providers.Add(provider);
+        await _dbContext.SaveChangesAsync();
 
         var verificationToken = new EmailVerificationToken
         {
-            Id = Guid.NewGuid(),
             ProviderId = provider.Id,
             Token = _tokenService.GenerateRefreshToken(),
-            ExpiresAt = DateTime.UtcNow.AddHours(24),
-            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTimeOffset.UtcNow.AddHours(24),
             IsUsed = false
         };
 
@@ -70,7 +67,7 @@ public class AuthenticationService : IAuthenticationService
             FullName: provider.FullName,
             AccessToken: accessToken,
             RefreshToken: refreshToken,
-            ExpiresAt: DateTime.UtcNow.AddHours(1)
+            ExpiresAt: DateTimeOffset.UtcNow.AddHours(1)
         );
 
         return (true, "Registration successful. Please verify your email.", result);
@@ -101,7 +98,7 @@ public class AuthenticationService : IAuthenticationService
             FullName: provider.FullName,
             AccessToken: accessToken,
             RefreshToken: refreshToken,
-            ExpiresAt: DateTime.UtcNow.AddHours(1)
+            ExpiresAt: DateTimeOffset.UtcNow.AddHours(1)
         );
 
         return (true, "Login successful", result);
@@ -115,18 +112,19 @@ public class AuthenticationService : IAuthenticationService
         if (verificationToken == null)
             return (false, "Invalid or expired token");
 
-        if (verificationToken.ExpiresAt < DateTime.UtcNow)
+        if (verificationToken.ExpiresAt < DateTimeOffset.UtcNow)
             return (false, "Token expired");
 
         verificationToken.IsUsed = true;
-        verificationToken.UsedAt = DateTime.UtcNow;
+        verificationToken.UsedAt = DateTimeOffset.UtcNow;
         
         var provider = await _dbContext.Providers.FirstOrDefaultAsync(p => p.Id == verificationToken.ProviderId);
         if (provider == null)
             return (false, "Provider not found");
 
         provider.Status = ProviderStatus.Active;
-        provider.EmailVerifiedAt = DateTime.UtcNow;
+        provider.EmailVerifiedAt = DateTimeOffset.UtcNow;
+        provider.UpdatedAt = DateTimeOffset.UtcNow;
 
         await _dbContext.SaveChangesAsync();
 

@@ -22,17 +22,17 @@ public record RefreshTokenRequest(
 );
 
 public record AuthResponse(
-    Guid ProviderId,
+    int ProviderId,
     string Email,
     string Username,
     string FullName,
     string AccessToken,
     string RefreshToken,
-    DateTime ExpiresAt
+    DateTimeOffset ExpiresAt
 );
 
 public record TokenResponse(
     string AccessToken,
     string RefreshToken,
-    DateTime ExpiresAt
+    DateTimeOffset ExpiresAt
 );

@@ -21,11 +21,11 @@ public interface IAuthenticationService
 }
 
 public record AuthenticationResult(
-    Guid ProviderId,
+    int ProviderId,
     string Email,
     string Username,
     string FullName,
     string AccessToken,
     string RefreshToken,
-    DateTime ExpiresAt
+    DateTimeOffset ExpiresAt
 );

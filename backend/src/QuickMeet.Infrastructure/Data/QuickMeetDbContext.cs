@@ -56,13 +56,17 @@ public class QuickMeetDbContext : DbContext, IQuickMeetDbContext
             .HasConversion<int>();
 
         builder.Property(p => p.CreatedAt)
-            .HasColumnType("datetime2");
+            .HasColumnType("datetimeoffset")
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("SYSUTCDATETIME()");
 
         builder.Property(p => p.UpdatedAt)
-            .HasColumnType("datetime2");
+            .HasColumnType("datetimeoffset")
+            .ValueGeneratedOnAddOrUpdate()
+            .HasDefaultValueSql("SYSUTCDATETIME()");
 
         builder.Property(p => p.EmailVerifiedAt)
-            .HasColumnType("datetime2");
+            .HasColumnType("datetimeoffset");
 
         builder.HasIndex(p => p.Email)
             .IsUnique()
@@ -89,13 +93,15 @@ public class QuickMeetDbContext : DbContext, IQuickMeetDbContext
             .HasMaxLength(255);
 
         builder.Property(t => t.CreatedAt)
-            .HasColumnType("datetime2");
+            .HasColumnType("datetimeoffset")
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("SYSUTCDATETIME()");
 
         builder.Property(t => t.ExpiresAt)
-            .HasColumnType("datetime2");
+            .HasColumnType("datetimeoffset");
 
         builder.Property(t => t.UsedAt)
-            .HasColumnType("datetime2");
+            .HasColumnType("datetimeoffset");
 
         builder.HasIndex(t => t.Token)
             .IsUnique()

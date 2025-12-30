@@ -2,7 +2,7 @@ namespace QuickMeet.Core.Interfaces;
 
 public interface ITokenService
 {
-    string GenerateAccessToken(Guid providerId, string email);
+    string GenerateAccessToken(int providerId, string email);
     string GenerateRefreshToken();
-    bool ValidateAccessToken(string token, out Guid providerId);
+    bool ValidateAccessToken(string token, out int providerId);
 }

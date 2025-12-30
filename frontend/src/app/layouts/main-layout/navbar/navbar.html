@@ -1,23 +1,25 @@
-<p-menubar [model]="navItems" class="bg-white border-b border-gray-200 px-0 py-0">
-  <!-- Start: Logo Section -->
-  <ng-template #start>
-    <a routerLink="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer ml-4">
-      <app-logo size="sm" [showText]="false"></app-logo>
-      <span class="text-2xl font-semibold text-blue-700 hidden sm:inline">QuickMeet</span>
-    </a>
-  </ng-template>
+<div *ngIf="isAuthenticated$ | async">
+  <p-menubar [model]="navItems" class="bg-white border-b border-gray-200 px-0 py-0">
+    <!-- Start: Logo Section -->
+    <ng-template #start>
+      <a routerLink="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer ml-4">
+        <app-logo size="sm" [showText]="false"></app-logo>
+        <span class="text-2xl font-semibold text-blue-700 hidden sm:inline">QuickMeet</span>
+      </a>
+    </ng-template>
 
-  <!-- End: Logout Button -->
-  <ng-template #end>
-    <p-button
-      icon="pi pi-sign-out"
-      (onClick)="onLogout()"
-      severity="danger"
-      [text]="true"
-      [rounded]="true"
-      pTooltip="Cerrar Sesión"
-      tooltipPosition="bottom"
-      class="mr-4 hover:bg-red-50"
-    ></p-button>
-  </ng-template>
-</p-menubar>
+    <!-- End: Logout Button -->
+    <ng-template #end>
+      <p-button
+        icon="pi pi-sign-out"
+        (onClick)="onLogout()"
+        severity="danger"
+        [text]="true"
+        [rounded]="true"
+        pTooltip="Cerrar Sesión"
+        tooltipPosition="bottom"
+        class="mr-4 hover:bg-red-50"
+      ></p-button>
+    </ng-template>
+  </p-menubar>
+</div>

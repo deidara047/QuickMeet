@@ -2,7 +2,7 @@ namespace QuickMeet.Core.Entities;
 
 public class Provider
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     
     public string Email { get; set; } = string.Empty;
     
@@ -22,11 +22,11 @@ public class Provider
     
     public ProviderStatus Status { get; set; } = ProviderStatus.PendingVerification;
     
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; }
     
-    public DateTime? UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
     
-    public DateTime? EmailVerifiedAt { get; set; }
+    public DateTimeOffset? EmailVerifiedAt { get; set; }
     
     public ICollection<EmailVerificationToken> EmailVerificationTokens { get; set; } = [];
 }

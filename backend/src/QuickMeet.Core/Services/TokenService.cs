@@ -21,7 +21,7 @@ public class TokenService : ITokenService
             configuration["Jwt:AccessTokenExpirationMinutes"] ?? "60");
     }
 
-    public string GenerateAccessToken(Guid providerId, string email)
+    public string GenerateAccessToken(int providerId, string email)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -51,9 +51,9 @@ public class TokenService : ITokenService
         return Convert.ToBase64String(randomNumber);
     }
 
-    public bool ValidateAccessToken(string token, out Guid providerId)
+    public bool ValidateAccessToken(string token, out int providerId)
     {
-        providerId = Guid.Empty;
+        providerId = 0;
 
         try
         {
@@ -73,7 +73,7 @@ public class TokenService : ITokenService
             }, out SecurityToken validatedToken);
 
             var providerIdClaim = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (providerIdClaim != null && Guid.TryParse(providerIdClaim.Value, out var id))
+            if (providerIdClaim != null && int.TryParse(providerIdClaim.Value, out var id))
             {
                 providerId = id;
                 return true;
