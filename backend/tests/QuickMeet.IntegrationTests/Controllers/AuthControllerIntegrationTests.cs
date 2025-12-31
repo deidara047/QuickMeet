@@ -76,4 +76,205 @@ public class AuthControllerIntegrationTests : IntegrationTestBase
     }
 
     #endregion
+
+    #region Register Tests - Errors
+
+    [Fact]
+    public async Task Register_DuplicateEmail_ReturnsBadRequest()
+    {
+        // Arrange
+        var request1 = new RegisterRequest(
+            Email: "duplicate@example.com",
+            Username: "user1",
+            FullName: "User One",
+            Password: "ValidPassword123!@",
+            PasswordConfirmation: "ValidPassword123!@"
+        );
+
+        var request2 = new RegisterRequest(
+            Email: "duplicate@example.com",
+            Username: "user2",
+            FullName: "User Two",
+            Password: "ValidPassword123!@",
+            PasswordConfirmation: "ValidPassword123!@"
+        );
+
+        // Act
+        await Client.PostAsJsonAsync("/api/auth/register", request1);
+        var response = await Client.PostAsJsonAsync("/api/auth/register", request2);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_DuplicateUsername_ReturnsBadRequest()
+    {
+        // Arrange
+        var request1 = new RegisterRequest(
+            Email: "email1@example.com",
+            Username: "samename",
+            FullName: "User One",
+            Password: "ValidPassword123!@",
+            PasswordConfirmation: "ValidPassword123!@"
+        );
+
+        var request2 = new RegisterRequest(
+            Email: "email2@example.com",
+            Username: "samename",
+            FullName: "User Two",
+            Password: "ValidPassword123!@",
+            PasswordConfirmation: "ValidPassword123!@"
+        );
+
+        // Act
+        await Client.PostAsJsonAsync("/api/auth/register", request1);
+        var response = await Client.PostAsJsonAsync("/api/auth/register", request2);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_NullEmail_ReturnsBadRequest()
+    {
+        // Arrange
+        var request = new RegisterRequest(
+            Email: null!,
+            Username: "testuser",
+            FullName: "Test User",
+            Password: "ValidPassword123!@",
+            PasswordConfirmation: "ValidPassword123!@"
+        );
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/auth/register", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_EmptyPassword_ReturnsBadRequest()
+    {
+        // Arrange
+        var request = new RegisterRequest(
+            Email: "test@example.com",
+            Username: "testuser",
+            FullName: "Test User",
+            Password: "",
+            PasswordConfirmation: ""
+        );
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/auth/register", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    #endregion
+
+    #region Login Tests
+
+    [Fact]
+    public async Task Login_ValidCredentials_ReturnsOk()
+    {
+        // Arrange - Primero registrar un usuario
+        var registerRequest = new RegisterRequest(
+            Email: "login@example.com",
+            Username: "loginuser",
+            FullName: "Login User",
+            Password: "ValidPassword123!@",
+            PasswordConfirmation: "ValidPassword123!@"
+        );
+        await Client.PostAsJsonAsync("/api/auth/register", registerRequest);
+
+        var loginRequest = new LoginRequest(
+            Email: "login@example.com",
+            Password: "ValidPassword123!@"
+        );
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/auth/login", loginRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.AccessToken);
+    }
+
+    [Fact]
+    public async Task Login_InvalidPassword_ReturnsUnauthorized()
+    {
+        // Arrange - Registrar usuario
+        var registerRequest = new RegisterRequest(
+            Email: "wrong@example.com",
+            Username: "wronguser",
+            FullName: "Wrong User",
+            Password: "CorrectPassword123!@",
+            PasswordConfirmation: "CorrectPassword123!@"
+        );
+        await Client.PostAsJsonAsync("/api/auth/register", registerRequest);
+
+        var loginRequest = new LoginRequest(
+            Email: "wrong@example.com",
+            Password: "WrongPassword123!@"
+        );
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/auth/login", loginRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_NonexistentUser_ReturnsUnauthorized()
+    {
+        // Arrange
+        var loginRequest = new LoginRequest(
+            Email: "nonexistent@example.com",
+            Password: "AnyPassword123!@"
+        );
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/auth/login", loginRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_SuspendedAccount_ReturnsUnauthorized()
+    {
+        // Arrange - Crear provider suspendido directamente en BD
+        await SeedDatabase(db =>
+        {
+            var provider = new QuickMeet.Core.Entities.Provider
+            {
+                Email = "suspended@example.com",
+                Username = "suspendeduser",
+                FullName = "Suspended User",
+                PasswordHash = "hashed_password",
+                Status = QuickMeet.Core.Entities.ProviderStatus.Suspended,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            db.Providers.Add(provider);
+        });
+
+        var loginRequest = new LoginRequest(
+            Email: "suspended@example.com",
+            Password: "AnyPassword123!@"
+        );
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/api/auth/login", loginRequest);
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    #endregion
 }
