@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpTimeoutError } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, timeout } from 'rxjs/operators';
 import { environment } from '@env/environment';
@@ -91,7 +91,7 @@ export class ApiService {
   private handleError(error: any) {
     let errorMessage = 'An error occurred';
 
-    if (error instanceof HttpTimeoutError) {
+    if (error.name === 'TimeoutError') {
       errorMessage = `Request timeout after ${environment.apiTimeout}ms`;
       console.error('[ApiService] Timeout Error:', errorMessage);
     } else if (error instanceof HttpErrorResponse) {

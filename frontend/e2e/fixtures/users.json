@@ -1,0 +1,14 @@
+{
+  "testUser": {
+    "email": "test@quickmeet.local",
+    "username": "testuser-001",
+    "fullName": "Test User",
+    "password": "TestPassword123!"
+  },
+  "existingUser": {
+    "email": "existing@quickmeet.local",
+    "username": "existing-user",
+    "fullName": "Existing User",
+    "password": "ExistingPassword123!"
+  }
+}

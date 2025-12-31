@@ -23,6 +23,7 @@
           id="email"
           type="email"
           formControlName="email"
+          data-testid="login-email-input"
           class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"
           placeholder="tu@email.com"
           [class.ng-invalid]="isFieldInvalid('email')"
@@ -39,6 +40,7 @@
         <p-password
           inputId="password"
           formControlName="password"
+          data-testid="login-password-input"
           [toggleMask]="true"
           [feedback]="false"
           placeholder="Tu contraseña"
@@ -55,6 +57,7 @@
         type="submit"
         label="Iniciar Sesión"
         icon="pi pi-sign-in"
+        data-testid="login-submit-button"
         [loading]="loading"
         [disabled]="form.invalid || loading"
         styleClass="w-full mt-6"

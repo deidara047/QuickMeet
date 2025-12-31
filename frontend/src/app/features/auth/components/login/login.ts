@@ -65,13 +65,7 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(formData).subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Éxito',
-          detail: 'Sesión iniciada correctamente',
-          life: 2000
-        });
-        setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading = false;

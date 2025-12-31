@@ -31,10 +31,33 @@ export default defineConfig({
     
     /* Collect trace when retrying the failed test */
     trace: 'on-first-retry',
+    launchOptions: {
+      slowMo: 1000,
+    }
   },
 
   /* Configure projects for major browsers */
   projects: [
+    // {
+    //   name: 'setup',
+    //   testMatch: /.*\.setup\.ts/,
+    //   use: { ...devices['Desktop Chrome'] },
+    // },
+
+    // {
+    //   name: 'authenticated',
+    //   dependencies: ['setup'],
+    //   use: {
+    //     ...devices['Desktop Chrome'],
+    //     storageState: 'playwright/.auth/user.json',
+    //   },
+    // },
+
+    {
+      name: 'guest',
+      use: { ...devices['Desktop Chrome'] },
+    },
+
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
