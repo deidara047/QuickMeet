@@ -299,13 +299,13 @@ public abstract class IntegrationTestBase : IClassFixture<QuickMeetWebApplicatio
 backend/tests/QuickMeet.IntegrationTests/Controllers/
 ```
 
-- [ ] Click derecho en QuickMeet.IntegrationTests
-- [ ] New Folder → `Controllers`
+- [x] Click derecho en QuickMeet.IntegrationTests
+- [x] New Folder → `Controllers`
 
 #### 2️⃣ Crear archivo: `AuthControllerIntegrationTests.cs`
 
-- [ ] Click derecho en carpeta Controllers
-- [ ] New File → `AuthControllerIntegrationTests.cs`
+- [x] Click derecho en carpeta Controllers
+- [x] New File → `AuthControllerIntegrationTests.cs`
 
 #### 3️⃣ Copiar contenido - PRIMER TEST SOLAMENTE
 
@@ -359,8 +359,8 @@ public class AuthControllerIntegrationTests : IntegrationTestBase
 }
 ```
 
-- [ ] Pegar contenido
-- [ ] Guardar
+- [x] Pegar contenido
+- [x] Guardar
 
 #### 4️⃣ Ejecutar test
 
@@ -369,11 +369,11 @@ cd C:\Users\luisr\Documents\Proyectos\ProyectoCitas\backend
 dotnet test --filter "Register_ValidData_ReturnsOkWithTokens"
 ```
 
-- [ ] Ejecutar comando
-- [ ] Esperar resultado
+- [x] Ejecutar comando
+- [x] Esperar resultado
 
 #### ✅ Criterio de éxito PASO 4a:
-- [ ] Test **PASA** ✅ (Status esperado: `1 passed`)
+- [x] Test **PASA** ✅ (Status esperado: `1 passed`)
 
 **Si FALLA:**
 
@@ -431,8 +431,8 @@ public async Task Register_ValidData_PasswordNotStoredInPlainText()
 #endregion
 ```
 
-- [ ] Agregar código
-- [ ] Guardar archivo
+- [x] Agregar código
+- [x] Guardar archivo
 
 #### 2️⃣ Ejecutar test
 
@@ -440,11 +440,11 @@ public async Task Register_ValidData_PasswordNotStoredInPlainText()
 dotnet test --filter "PasswordNotStoredInPlainText"
 ```
 
-- [ ] Ejecutar comando
-- [ ] Esperar resultado
+- [x] Ejecutar comando
+- [x] Esperar resultado
 
 #### ✅ Criterio de éxito PASO 4b:
-- [ ] Test **PASA** ✅ (Status esperado: `1 passed`)
+- [x] Test **PASA** ✅ (Status esperado: `1 passed`)
 
 **Si FALLA:**
 

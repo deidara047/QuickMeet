@@ -91,10 +91,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpLogging();
 
-using (var scope = app.Services.CreateScope())
+// Inicializar base de datos solo en ambiente de producción (no en testing)
+if (!app.Environment.IsEnvironment("Test"))
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<QuickMeetDbContext>();
-    dbContext.Database.Migrate();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<QuickMeetDbContext>();
+        dbContext.Database.Migrate();
+    }
 }
 
 app.UseCors("AllowFrontend");
