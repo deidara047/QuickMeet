@@ -249,15 +249,18 @@ public class AuthControllerIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task Login_SuspendedAccount_ReturnsUnauthorized()
     {
-        // Arrange - Crear provider suspendido directamente en BD
+        // Arrange - Crear provider suspendido directamente en BD con password hasheado
+        var passwordToHash = "SuspendedPassword123!@";
         await SeedDatabase(db =>
         {
+            // Usar PasswordHashingService real para generar hash válido
+            var hasher = new QuickMeet.Core.Services.PasswordHashingService();
             var provider = new QuickMeet.Core.Entities.Provider
             {
                 Email = "suspended@example.com",
                 Username = "suspendeduser",
                 FullName = "Suspended User",
-                PasswordHash = "hashed_password",
+                PasswordHash = hasher.HashPassword(passwordToHash), // ← Hash real
                 Status = QuickMeet.Core.Entities.ProviderStatus.Suspended,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -265,14 +268,18 @@ public class AuthControllerIntegrationTests : IntegrationTestBase
             db.Providers.Add(provider);
         });
 
+        // Intentar login con password correcto
         var loginRequest = new LoginRequest(
             Email: "suspended@example.com",
-            Password: "AnyPassword123!@"
+            Password: passwordToHash // ← Mismo password que hasheamos
         );
 
         // Act
         var response = await Client.PostAsJsonAsync("/api/auth/login", loginRequest);
+
         // Assert
+        // Debería retornar Unauthorized porque la cuenta está suspendida
+        // (aunque el password sea correcto)
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
