@@ -65,6 +65,7 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(formData).subscribe({
       next: () => {
+        this.loading = false;
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
@@ -76,9 +77,6 @@ export class LoginComponent implements OnInit {
           detail: errorMsg,
           life: 3000
         });
-      },
-      complete: () => {
-        this.loading = false;
       }
     });
   }
