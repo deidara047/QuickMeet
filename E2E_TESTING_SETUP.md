@@ -244,19 +244,85 @@ Release build (producción):
 ```
 
 ### Objetivos
-- [ ] Crear `TestController.cs` con `#if DEBUG ... #endif`
-- [ ] Constructor valida `AllowDangerousOperations` (doble check)
-- [ ] Usar `ILogger<TestController>` para structured logging
-- [ ] `[ApiExplorerSettings(IgnoreApi = true)]` para no aparecer en Swagger
-- [ ] Implementar `POST /api/test/seed-user` completo
-- [ ] Implementar `DELETE /api/test/cleanup-user/{email}` completo
-- [ ] Crear DTOs necesarios
+- [x] Crear `TestController.cs` con `#if DEBUG ... #endif`
+- [x] Crear `RequireDangerousOperationsAttribute.cs` como filtro de autorización
+- [x] Usar `ILogger<T>` para structured logging
+- [x] `[ApiExplorerSettings(IgnoreApi = true)]` para no aparecer en Swagger
+- [x] Implementar `POST /api/test/seed-user` completo
+- [x] Implementar `DELETE /api/test/cleanup-user/{email}` completo
+- [x] Implementar `POST /api/test/reset-database` completo
+- [x] Crear DTOs necesarios
 
 ### Archivos a crear/modificar
-- [ ] `backend/src/QuickMeet.API/Controllers/TestController.cs` (nuevo)
-- [ ] `backend/src/QuickMeet.API/DTOs/Auth/TestDtos.cs` (nuevo)
+- [x] `backend/src/QuickMeet.API/Controllers/TestController.cs` (nuevo)
+- [x] `backend/src/QuickMeet.API/Filters/RequireDangerousOperationsAttribute.cs` (nuevo)
+- [x] `backend/src/QuickMeet.API/DTOs/Auth/TestDtos.cs` (nuevo)
 
 ### Implementación completa
+
+#### RequireDangerousOperationsAttribute.cs
+
+**Archivo**: `backend/src/QuickMeet.API/Filters/RequireDangerousOperationsAttribute.cs`
+
+```csharp
+#if DEBUG
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+
+namespace QuickMeet.API.Filters
+{
+    /// <summary>
+    /// Filtro de autorización para endpoints de testing.
+    /// Solo permite acceso cuando AllowDangerousOperations=true en Development.
+    /// En Release, esta clase no se compila gracias a #if DEBUG.
+    /// </summary>
+    public class RequireDangerousOperationsAttribute : ActionFilterAttribute
+    {
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            var config = context.HttpContext.RequestServices
+                .GetRequiredService<IConfiguration>();
+            var env = context.HttpContext.RequestServices
+                .GetRequiredService<IWebHostEnvironment>();
+            var logger = context.HttpContext.RequestServices
+                .GetRequiredService<ILogger<RequireDangerousOperationsAttribute>>();
+
+            var allowDangerous = config.GetValue<bool>("AllowDangerousOperations");
+            var path = context.HttpContext.Request.Path;
+            var method = context.HttpContext.Request.Method;
+
+            if (!allowDangerous || !env.IsDevelopment())
+            {
+                logger.LogWarning(
+                    "Blocked dangerous operation attempt. AllowDangerous={Allow}, Environment={Env}, " +
+                    "Path={Path}, Method={Method}",
+                    allowDangerous,
+                    env.EnvironmentName,
+                    path,
+                    method);
+
+                context.Result = new NotFoundResult();
+                return;
+            }
+
+            logger.LogDebug(
+                "Dangerous operation allowed. Path={Path}, Method={Method}",
+                path,
+                method);
+
+            base.OnActionExecuting(context);
+        }
+    }
+}
+#endif
+```
+
+**Características:**
+- `#if DEBUG`: No se compila en Release
+- Doble verificación: `AllowDangerousOperations` + `IsDevelopment()`
+- Retorna 404 silenciosamente si está bloqueado (no expone existencia del endpoint)
+- Logger tipado para mejor debugging
+- Registra Path y Method para auditoría
 
 #### TestController.cs
 
@@ -267,84 +333,54 @@ Release build (producción):
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuickMeet.Core.Interfaces;
-using QuickMeet.Core.Entities;
 using QuickMeet.Infrastructure.Data;
 using QuickMeet.API.DTOs.Auth;
+using QuickMeet.API.Filters;
 
 namespace QuickMeet.API.Controllers
 {
-    /// <summary>
-    /// ⚠️ TESTING ONLY - Este controller SOLO EXISTE EN DEBUG BUILDS
-    /// En Release: No se compila, imposible hackear
-    /// Permite crear y limpiar usuarios (Providers) de test para E2E testing
-    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    [ApiExplorerSettings(IgnoreApi = true)]  // No aparece en Swagger
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [RequireDangerousOperations]
     public class TestController : ControllerBase
     {
         private readonly IAuthenticationService _authService;
         private readonly QuickMeetDbContext _dbContext;
-        private readonly IConfiguration _config;
         private readonly ILogger<TestController> _logger;
 
         public TestController(
             IAuthenticationService authService,
             QuickMeetDbContext dbContext,
-            IConfiguration config,
             ILogger<TestController> logger)
         {
             _authService = authService;
             _dbContext = dbContext;
-            _config = config;
             _logger = logger;
-
-            // DOBLE VALIDACIÓN: Verificar que se cargó config de test
-            var allowDangerousOps = _config.GetValue<bool>("AllowDangerousOperations");
-            if (!allowDangerousOps)
-            {
-                _logger.LogError(
-                    "❌ TestController instantiated but AllowDangerousOperations=false. " +
-                    "Check that ASPNETCORE_ENV=Test and appsettings.Test.json has this flag set to true.");
-                throw new InvalidOperationException(
-                    "TestController requires AllowDangerousOperations=true. " +
-                    "Run with: set ASPNETCORE_ENV=Test");
-            }
-
-            _logger.LogWarning(
-                "🧪 TestController initialized. Dangerous testing operations enabled. " +
-                "This MUST NEVER appear in production logs!");
+            
+            _logger.LogInformation("TestController initialized");
         }
 
-        /// <summary>
-        /// POST /api/test/seed-user
-        /// Crea un usuario de test para E2E testing
-        /// </summary>
         [HttpPost("seed-user")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<object>> SeedUser([FromBody] SeedUserRequest request)
+        [ProducesResponseType(typeof(SeedUserResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<SeedUserResponse>> SeedUser([FromBody] SeedUserRequest request)
         {
             try
             {
-                _logger.LogWarning(
-                    "🧪 TEST: Seeding user {Email} at {Timestamp}",
-                    request.Email,
-                    DateTime.UtcNow);
+                _logger.LogInformation("Test: Seeding user {Email}", request.Email);
 
-                // 1. Validar que email no exista
                 var existingUser = await _dbContext.Providers
                     .FirstOrDefaultAsync(p => p.Email == request.Email);
 
                 if (existingUser != null)
                 {
-                    _logger.LogWarning("🧪 TEST: User {Email} already exists", request.Email);
-                    return BadRequest(new { error = "User already exists" });
+                    _logger.LogInformation("Test: User {Email} already exists", request.Email);
+                    return BadRequest(new ErrorResponse { Error = "User already exists" });
                 }
 
-                // 2. Crear usuario usando el servicio de autenticación
-                var username = request.Username ?? $"user_{DateTime.UtcNow.Ticks}";
+                var username = request.Username ?? $"testuser_{DateTime.UtcNow.Ticks}";
                 var fullName = request.FullName ?? "Test User";
                 var password = request.Password ?? "Test@123456";
 
@@ -354,88 +390,148 @@ namespace QuickMeet.API.Controllers
                     fullName,
                     password);
 
-                if (!success)
+                if (!success || authResult == null)
                 {
-                    _logger.LogError("🧪 TEST: Failed to seed user {Email}: {Message}", request.Email, message);
-                    return BadRequest(new { error = message });
+                    _logger.LogError("Test: Failed to seed user {Email}: {Message}", request.Email, message);
+                    return BadRequest(new ErrorResponse { Error = message });
                 }
 
-                _logger.LogWarning("🧪 TEST: User {Email} seeded successfully with ProviderId: {ProviderId}", 
-                    request.Email, authResult?.ProviderId);
+                _logger.LogInformation("Test: User {Email} seeded successfully", request.Email);
                 
-                // Retornar el resultado de autenticación (incluye tokens si aplica)
-                return CreatedAtAction(nameof(SeedUser), 
-                    new { email = request.Email }, 
-                    new { 
-                        providerId = authResult?.ProviderId,
-                        email = authResult?.Email,
-                        username = authResult?.Username,
-                        fullName = authResult?.FullName
-                    });
+                var response = new SeedUserResponse
+                {
+                    ProviderId = authResult.ProviderId,
+                    Email = authResult.Email,
+                    Username = authResult.Username,
+                    FullName = authResult.FullName,
+                    AccessToken = authResult.AccessToken,
+                    RefreshToken = authResult.RefreshToken
+                };
+
+                return CreatedAtAction(nameof(SeedUser), new { email = request.Email }, response);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "🧪 TEST: Error seeding user {Email}", request.Email);
-                return StatusCode(500, new { error = "Internal error seeding user", details = ex.Message });
+                _logger.LogError(ex, "Test: Error seeding user {Email}", request.Email);
+                return StatusCode(500, new ErrorResponse 
+                { 
+                    Error = "Internal error seeding user", 
+                    Details = ex.Message 
+                });
             }
         }
 
-        /// <summary>
-        /// DELETE /api/test/cleanup-user/{email}
-        /// Elimina usuario de test después de E2E testing
-        /// </summary>
         [HttpDelete("cleanup-user/{email}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CleanupUser(string email)
         {
             try
             {
-                _logger.LogWarning(
-                    "🧪 TEST: Cleanup user {Email} at {Timestamp}",
-                    email,
-                    DateTime.UtcNow);
+                _logger.LogInformation("Test: Cleanup user {Email}", email);
 
                 var user = await _dbContext.Providers
                     .FirstOrDefaultAsync(p => p.Email == email);
 
                 if (user == null)
                 {
-                    _logger.LogInformation("🧪 TEST: User {Email} not found for cleanup", email);
-                    return NotFound(new { error = "User not found" });
+                    _logger.LogInformation("Test: User {Email} not found for cleanup", email);
+                    return NotFound(new ErrorResponse { Error = "User not found" });
                 }
 
                 _dbContext.Providers.Remove(user);
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogWarning("🧪 TEST: User {Email} deleted successfully", email);
+                _logger.LogInformation("Test: User {Email} deleted successfully", email);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "🧪 TEST: Error cleaning up user {Email}", email);
-                return StatusCode(500, new { error = "Internal error cleaning user", details = ex.Message });
+                _logger.LogError(ex, "Test: Error cleaning up user {Email}", email);
+                return StatusCode(500, new ErrorResponse 
+                { 
+                    Error = "Internal error cleaning user", 
+                    Details = ex.Message 
+                });
             }
         }
 
-        /// <summary>
-        /// GET /api/test/ping
-        /// Endpoint simple para verificar que TestController está activo
-        /// Útil para debugging en E2E tests
-        /// </summary>
         [HttpGet("ping")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PingResponse), StatusCodes.Status200OK)]
         public IActionResult Ping()
         {
-            _logger.LogInformation("🧪 TEST: Ping received");
-            return Ok(new { 
-                message = "TestController is active", 
-                environment = _config["ASPNETCORE_ENVIRONMENT"],
-                timestamp = DateTime.UtcNow,
-                allowDangerousOperations = _config.GetValue<bool>("AllowDangerousOperations")
-            });
+            _logger.LogInformation("Test: Ping received");
+            
+            var response = new PingResponse
+            {
+                Message = "TestController is active",
+                Environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown",
+                Timestamp = DateTime.UtcNow
+            };
+
+            return Ok(response);
         }
+
+        [HttpPost("reset-database")]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<MessageResponse>> ResetDatabase()
+        {
+            try
+            {
+                _logger.LogWarning("Test: Database reset initiated - DESTRUCTIVE OPERATION");
+
+                await _dbContext.Database.EnsureDeletedAsync();
+                await _dbContext.Database.EnsureCreatedAsync();
+
+                _logger.LogWarning("Test: Database reset completed successfully");
+
+                var response = new MessageResponse
+                {
+                    Message = "Database reset successfully"
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Test: Error resetting database");
+                return StatusCode(500, new ErrorResponse 
+                { 
+                    Error = "Internal error resetting database", 
+                    Details = ex.Message 
+                });
+            }
+        }
+    }
+
+    public record SeedUserResponse
+    {
+        public int ProviderId { get; init; }
+        public string Email { get; init; } = string.Empty;
+        public string Username { get; init; } = string.Empty;
+        public string FullName { get; init; } = string.Empty;
+        public string AccessToken { get; init; } = string.Empty;
+        public string? RefreshToken { get; init; }
+    }
+
+    public record ErrorResponse
+    {
+        public string Error { get; init; } = string.Empty;
+        public string? Details { get; init; }
+    }
+
+    public record PingResponse
+    {
+        public string Message { get; init; } = string.Empty;
+        public string Environment { get; init; } = string.Empty;
+        public DateTime Timestamp { get; init; }
+    }
+
+    public record MessageResponse
+    {
+        public string Message { get; init; } = string.Empty;
     }
 }
 #endif
@@ -506,20 +602,27 @@ curl http://localhost:5173/api/test/ping
 # → Debería responder: 404 Not Found
 ```
 
-#### Test 2: Verificar doble check de AllowDangerousOperations
+#### Test 2: Verificar protección del filtro
 
 ```bash
-# Editar temporalmente appsettings.Test.json
+# Editar temporalmente appsettings.Development.json
 # Cambiar: "AllowDangerousOperations": false
 
-set ASPNETCORE_ENV=Test
-dotnet run --project src/QuickMeet.API
-# → Debe lanzar exception: "TestController requires AllowDangerousOperations=true"
+# El endpoint DEBE retornar 404 (no 500)
+curl http://localhost:5173/api/test/ping
+# → Respuesta 404 Not Found
 
 # Revertir cambio después del test
 ```
 
-#### Test 3: Probar endpoints funcionales
+#### Test 3: Verificar que no está en Swagger
+
+```bash
+# Acceder a Swagger: http://localhost:5173/swagger/index.html
+# TestController NO debe aparecer en la lista de endpoints
+```
+
+#### Test 4: Probar endpoints funcionales
 
 ```bash
 # Seed user
@@ -528,20 +631,26 @@ curl -X POST http://localhost:5173/api/test/seed-user \
   -d '{"email":"test@test.com","password":"Test@123456"}'
 # → Respuesta 201 Created
 
+# Reset database (destructive)
+curl -X POST http://localhost:5173/api/test/reset-database
+# → Respuesta 200 OK con {"message":"Database reset successfully"}
+
 # Cleanup user
 curl -X DELETE http://localhost:5173/api/test/cleanup-user/test@test.com
 # → Respuesta 204 No Content
 ```
 
 #### Checklist de validación
-- [ ] TestController compila en Debug
-- [ ] TestController NO existe en Release build
-- [ ] Constructor valida `AllowDangerousOperations`
-- [ ] Endpoint `/api/test/ping` responde en Test
-- [ ] Endpoint `/api/test/seed-user` crea usuarios
-- [ ] Endpoint `/api/test/cleanup-user/{email}` elimina usuarios
-- [ ] Logging con warnings aparece en consola
-- [ ] En Release: `/api/test/ping` retorna 404
+- [x] TestController compila en Debug
+- [x] TestController NO existe en Release build
+- [x] Atributo [RequireDangerousOperations] protege los endpoints
+- [x] Endpoint `/api/test/ping` responde en Development
+- [x] Endpoint `/api/test/seed-user` crea usuarios
+- [x] Endpoint `/api/test/cleanup-user/{email}` elimina usuarios
+- [x] Endpoint `/api/test/reset-database` reinicia DB
+- [x] Logging estructurado con Path y Method
+- [x] En Release: `/api/test/*` retorna 404 automático
+- [x] AllowDangerousOperations solo en Development y Test
 
 ---
 
