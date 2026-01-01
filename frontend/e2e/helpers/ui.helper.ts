@@ -3,7 +3,7 @@ import { Page, expect } from '@playwright/test';
 export const selectors = {
   loginEmail: '[data-testid="login-email-input"]',
   loginPassword: '[data-testid="login-password-input"] input',
-  loginButton: '[data-testid="login-submit-button"]',
+  loginButton: '[data-testid="login-submit-button"] button',
   registerEmail: '[data-testid="register-email-input"]',
   registerUsername: '[data-testid="register-username-input"]',
   registerFullName: '[data-testid="register-fullname-input"]',

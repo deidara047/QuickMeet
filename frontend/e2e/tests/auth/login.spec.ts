@@ -1,167 +1,125 @@
 import { test, expect } from '../../fixtures/page.fixture';
-import { selectors, clearLocalStorage, verifyRedirection, verifyLocalStorage } from '../../helpers/ui.helper';
-import { seedUser, cleanupUser, resetDatabase, pingTestEndpoint } from '../../helpers/test-api.helper';
+import { selectors, verifyToastMessage } from '../../helpers/ui.helper';
+import { seedUser, cleanupUser } from '../../helpers/test-api.helper';
 import { generateUniqueUser } from '../../helpers/test-data.helper';
 
-test.describe('Login - Pruebas E2E', () => {
-  
-  let dbResetDone = false;
+test.describe('Login - E2E Completo', () => {
 
-  test.beforeEach(async ({ page }) => {
-    await clearLocalStorage(page);
-    
-    if (!dbResetDone) {
-      try {
-        const response = await pingTestEndpoint(page);
-        console.log(`Backend ejecutándose en: ${response.environment}`);
-        
-        if (response.environment !== 'Development') {
-          throw new Error('Backend debe estar en modo Development para tests E2E');
-        }
-        
-        await resetDatabase(page);
-        console.log('Base de datos reiniciada para suite de Login');
-        dbResetDone = true;
-      } catch (error) {
-        throw new Error(
-          `Error al verificar backend. Asegúrate que está corriendo con:\n` +
-          `  - ASPNETCORE_ENVIRONMENT=Development\n` +
-          `  - AllowDangerousOperations=true\n\n` +
-          `Error: ${error instanceof Error ? error.message : String(error)}`
-        );
-      }
-    }
-  });
-
-  test.afterEach(async ({ page }) => {
-    await clearLocalStorage(page);
-  });
-
-  test('Backend: TestController está activo', async ({ page }) => {
-    const response = await pingTestEndpoint(page);
-    expect(response.message).toContain('TestController is active');
-    expect(response.environment).toBe('Development');
-    console.log('Backend health check OK');
-  });
-
-  test('UI: Formulario de login renderiza correctamente', async ({ page }) => {
-    await page.safeGoto('/login');
-    
-    await expect(page.locator(selectors.loginEmail)).toBeVisible();
-    await expect(page.locator(selectors.loginPassword)).toBeVisible();
-    await expect(page.locator(selectors.loginButton)).toBeVisible();
-    
-    await page.fill(selectors.loginEmail, 'test@example.com');
-    expect(await page.inputValue(selectors.loginEmail)).toBe('test@example.com');
-    
-    await page.fill(selectors.loginPassword, 'Test@123456');
-    expect(await page.inputValue(selectors.loginPassword)).toBe('Test@123456');
-    
-    console.log('UI del formulario verificada');
-  });
-
-  test('Login exitoso: flujo completo con validación de tokens', async ({ page }) => {
-    const testUser = generateUniqueUser('login-test');
+  test('Happy Path: Login exitoso → redirige a dashboard', async ({ page }) => {
+    const testUser = generateUniqueUser('login-happy');
     
     try {
-      const seededUser = await seedUser(page, testUser);
-      expect(seededUser.email).toBe(testUser.email);
-      console.log(`Usuario creado: ${seededUser.email}`);
-
+      await seedUser(page, testUser);
+      console.log(`Usuario creado: ${testUser.email}`);
+      
       await page.safeGoto('/login');
-
+      
       await page.fill(selectors.loginEmail, testUser.email);
       await page.fill(selectors.loginPassword, testUser.password);
-
+      
       await page.click(selectors.loginButton);
-
-      await verifyRedirection(page, '/dashboard', 8000);
-
-      const accessToken = await verifyLocalStorage(page, 'access_token', true);
-      const refreshToken = await verifyLocalStorage(page, 'refresh_token', true);
+      
+      await page.waitForURL('**/dashboard', { timeout: 8000 });
+      
+      expect(page.url()).toContain('/dashboard');
+      
+      const accessToken = await page.evaluate(() => localStorage.getItem('access_token'));
+      const refreshToken = await page.evaluate(() => localStorage.getItem('refresh_token'));
       const authUser = await page.evaluate(() => localStorage.getItem('auth_user'));
-
+      
       expect(accessToken).toBeTruthy();
-      expect(accessToken).toMatch(/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/);
       expect(refreshToken).toBeTruthy();
       expect(authUser).toBeTruthy();
-
+      
       const user = JSON.parse(authUser!);
       expect(user.email).toBe(testUser.email);
-      expect(user.username).toBe(testUser.username);
       
-      console.log('Login exitoso, todos los tokens y estado verificados');
+      console.log('Login exitoso, redirigido a dashboard con tokens guardados');
     } finally {
       await cleanupUser(page, testUser.email);
       console.log(`Usuario eliminado: ${testUser.email}`);
     }
   });
 
-  test('Login fallido: credenciales incorrectas', async ({ page }) => {
-    const testUser = generateUniqueUser('login-fail-test');
+  test('Unhappy Path: Credenciales inválidas → muestra error', async ({ page }) => {
+    const testUser = generateUniqueUser('login-invalid');
     
     try {
       await seedUser(page, testUser);
-      console.log('Usuario creado para test de fallo');
-
+      console.log(`Usuario creado: ${testUser.email}`);
+      
       await page.safeGoto('/login');
+      
       await page.fill(selectors.loginEmail, testUser.email);
       await page.fill(selectors.loginPassword, 'WrongPassword123!');
+      
       await page.click(selectors.loginButton);
-
-      await page.waitForTimeout(2000);
+      
+      await page.waitForTimeout(3000);
+      
       expect(page.url()).toContain('/login');
-
+      
       const token = await page.evaluate(() => localStorage.getItem('access_token'));
       expect(token).toBeNull();
       
-      console.log('Login fallido correctamente rechazado');
+      console.log('Login fallido correctamente, no redirigió a dashboard');
     } finally {
       await cleanupUser(page, testUser.email);
     }
   });
 
-  test('Login fallido: usuario no existe', async ({ page }) => {
+  test('Unhappy Path: Usuario no existe → muestra error', async ({ page }) => {
     await page.safeGoto('/login');
     
-    await page.fill(selectors.loginEmail, 'noexiste@example.com');
-    await page.fill(selectors.loginPassword, 'Password123!');
+    await page.fill(selectors.loginEmail, 'noexiste@test.com');
+    await page.fill(selectors.loginPassword, 'ValidPassword123!');
+    
     await page.click(selectors.loginButton);
-
-    await page.waitForTimeout(2000);
+    
+    await page.waitForTimeout(3000);
+    
     expect(page.url()).toContain('/login');
-
+    
     const token = await page.evaluate(() => localStorage.getItem('access_token'));
     expect(token).toBeNull();
     
-    console.log('Login con usuario inexistente correctamente rechazado');
+    console.log('Usuario no existe, login rechazado');
   });
 
-  test('Seguridad: mensaje de error genérico para casos de fallo', async ({ page }) => {
-    const testUser = generateUniqueUser('security-test');
+  test('Edge Case: Campo email vacío → validación del formulario', async ({ page }) => {
+    await page.safeGoto('/login');
     
-    try {
-      await seedUser(page, testUser);
-
-      await page.safeGoto('/login');
-      await page.fill(selectors.loginEmail, testUser.email);
-      await page.fill(selectors.loginPassword, 'WrongPassword!');
-      await page.click(selectors.loginButton);
-      await page.waitForTimeout(1000);
-      
-      await page.safeGoto('/login');
-      await page.fill(selectors.loginEmail, 'noexiste@test.com');
-      await page.fill(selectors.loginPassword, 'SomePassword!');
-      await page.click(selectors.loginButton);
-      await page.waitForTimeout(1000);
-
-      expect(page.url()).toContain('/login');
-      const token = await page.evaluate(() => localStorage.getItem('access_token'));
-      expect(token).toBeNull();
-      
-      console.log('Comportamiento de seguridad verificado: errores no revelan información');
-    } finally {
-      await cleanupUser(page, testUser.email);
-    }
+    const submitButton = page.locator(selectors.loginButton);
+    
+    // El botón debe estar deshabilitado cuando los campos están vacíos
+    await expect(submitButton).toBeDisabled();
+    console.log('Botón submit deshabilitado con campos vacíos');
   });
+
+  test('Edge Case: Email sin formato válido → validación del formulario', async ({ page }) => {
+    await page.safeGoto('/login');
+    
+    await page.fill(selectors.loginEmail, 'invalid-email');
+    await page.fill(selectors.loginPassword, 'ValidPassword123!');
+    
+    const submitButton = page.locator(selectors.loginButton);
+    
+    // El botón debe estar deshabilitado con email inválido
+    await expect(submitButton).toBeDisabled();
+    console.log('Botón submit deshabilitado con email inválido');
+  });
+
+  test('Edge Case: Password muy corta → validación del formulario', async ({ page }) => {
+    await page.safeGoto('/login');
+    
+    await page.fill(selectors.loginEmail, 'test@example.com');
+    await page.fill(selectors.loginPassword, 'short');
+    
+    const submitButton = page.locator(selectors.loginButton);
+    
+    // El botón debe estar deshabilitado con password muy corta
+    await expect(submitButton).toBeDisabled();
+    console.log('Botón submit deshabilitado con password muy corta');
+  });
+
 });

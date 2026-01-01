@@ -45,7 +45,7 @@ export class LoginComponent implements OnInit {
 
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(1)]]
+      password: ['', [Validators.required, Validators.minLength(8)]]
     });
   }
 
@@ -94,7 +94,7 @@ export class LoginComponent implements OnInit {
     }
 
     if (field.errors['required']) {
-      return `${fieldName} es requerido`;
+      return `${fieldName === 'email' ? 'Email' : 'Contraseña'} es requerido`;
     }
 
     if (field.errors['email']) {

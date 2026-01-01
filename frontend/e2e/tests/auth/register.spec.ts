@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures/page.fixture';
-import { selectors } from '../shared/test-helpers';
+import { selectors } from '../../helpers/ui.helper';
 
 test.describe('Autenticación - Registro', () => {
   test('Flujo 1: Registro exitoso y redirección a dashboard', async ({ page, testUser }) => {
