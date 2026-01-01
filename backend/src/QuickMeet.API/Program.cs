@@ -91,15 +91,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpLogging();
 
-// Inicializar base de datos solo en ambiente de producción (no en testing)
-if (!app.Environment.IsEnvironment("Test"))
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<QuickMeetDbContext>();
-        dbContext.Database.Migrate();
-    }
-}
+// Aplicar migraciones de forma asíncrona
+await ApplyMigrationsAsync(app);
 
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
@@ -107,5 +100,37 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Método auxiliar para aplicar migraciones
+async Task ApplyMigrationsAsync(WebApplication app)
+{
+    if (app.Environment.IsDevelopment())
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<QuickMeetDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+        try
+        {
+            var pending = await dbContext.Database.GetPendingMigrationsAsync();
+
+            if (pending.Any())
+            {
+                logger.LogInformation("Applying {Count} pending migration(s)", pending.Count());
+                await dbContext.Database.MigrateAsync();
+                logger.LogInformation("Migrations applied successfully");
+            }
+            else
+            {
+                logger.LogInformation("Database is up to date");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error applying migrations");
+            throw;
+        }
+    }
+}
 
 public partial class Program { }

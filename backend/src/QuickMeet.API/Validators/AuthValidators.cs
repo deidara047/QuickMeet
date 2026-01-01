@@ -8,28 +8,28 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
     public RegisterRequestValidator()
     {
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required")
-            .EmailAddress().WithMessage("Invalid email format");
+            .NotEmpty().WithMessage("Email es requerido")
+            .EmailAddress().WithMessage("Email inválido");
 
         RuleFor(x => x.Username)
-            .NotEmpty().WithMessage("Username is required")
-            .Length(3, 50).WithMessage("Username must be between 3 and 50 characters")
-            .Matches(@"^[a-zA-Z0-9-]+$").WithMessage("Username can only contain letters, numbers, and hyphens");
+            .NotEmpty().WithMessage("Usuario es requerido")
+            .Length(3, 50).WithMessage("Usuario debe tener entre 3 y 50 caracteres")
+            .Matches(@"^[a-zA-Z0-9-_]+$").WithMessage("Usuario solo puede contener letras, números, guiones y guiones bajos");
 
         RuleFor(x => x.FullName)
-            .NotEmpty().WithMessage("Full name is required")
-            .MaximumLength(256).WithMessage("Full name cannot exceed 256 characters");
+            .NotEmpty().WithMessage("Nombre completo es requerido")
+            .MaximumLength(256).WithMessage("Nombre completo no puede exceder 256 caracteres");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Password is required")
-            .MinimumLength(8).WithMessage("Password must be at least 8 characters")
-            .Must(p => p.Any(char.IsUpper)).WithMessage("Password must contain at least one uppercase letter")
-            .Must(p => p.Any(char.IsDigit)).WithMessage("Password must contain at least one digit")
-            .Must(p => p.Any(c => !char.IsLetterOrDigit(c))).WithMessage("Password must contain at least one special character");
+            .NotEmpty().WithMessage("Contraseña es requerida")
+            .MinimumLength(8).WithMessage("Contraseña debe tener al menos 8 caracteres")
+            .Must(p => p.Any(char.IsUpper)).WithMessage("Contraseña debe contener al menos una mayúscula")
+            .Must(p => p.Any(char.IsDigit)).WithMessage("Contraseña debe contener al menos un número")
+            .Must(p => p.Any(c => !char.IsLetterOrDigit(c))).WithMessage("Contraseña debe contener al menos un carácter especial");
 
         RuleFor(x => x.PasswordConfirmation)
-            .NotEmpty().WithMessage("Password confirmation is required")
-            .Equal(x => x.Password).WithMessage("Passwords do not match");
+            .NotEmpty().WithMessage("Confirmación de contraseña es requerida")
+            .Equal(x => x.Password).WithMessage("Las contraseñas no coinciden");
     }
 }
 
@@ -38,11 +38,11 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
     public LoginRequestValidator()
     {
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required")
-            .EmailAddress().WithMessage("Invalid email format");
+            .NotEmpty().WithMessage("Email es requerido")
+            .EmailAddress().WithMessage("Email inválido");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Password is required");
+            .NotEmpty().WithMessage("Contraseña es requerida");
     }
 }
 
@@ -51,6 +51,6 @@ public class VerifyEmailRequestValidator : AbstractValidator<VerifyEmailRequest>
     public VerifyEmailRequestValidator()
     {
         RuleFor(x => x.Token)
-            .NotEmpty().WithMessage("Token is required");
+            .NotEmpty().WithMessage("Token es requerido");
     }
 }

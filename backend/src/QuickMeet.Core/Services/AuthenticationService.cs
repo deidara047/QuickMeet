@@ -27,22 +27,22 @@ public class AuthenticationService : IAuthenticationService
     {
         // Validate inputs
         if (string.IsNullOrWhiteSpace(email))
-            return (false, "Email is required", null);
+            return (false, "Email es requerido", null);
 
         if (string.IsNullOrWhiteSpace(username))
-            return (false, "Username is required", null);
+            return (false, "Usuario es requerido", null);
 
         if (string.IsNullOrWhiteSpace(fullName))
-            return (false, "Full name is required", null);
+            return (false, "Nombre completo es requerido", null);
 
         if (string.IsNullOrWhiteSpace(password))
-            return (false, "Password is required", null);
+            return (false, "Contraseña es requerida", null);
 
         if (await _providerRepository.ExistsByEmailAsync(email))
-            return (false, "Email already registered", null);
+            return (false, "Email ya existe", null);
 
         if (await _providerRepository.ExistsByUsernameAsync(username))
-            return (false, "Username already taken", null);
+            return (false, "Usuario ya existe", null);
 
         var passwordHash = _passwordHashingService.HashPassword(password);
         
@@ -70,7 +70,7 @@ public class AuthenticationService : IAuthenticationService
             ExpiresAt: DateTimeOffset.UtcNow.AddHours(1)
         );
 
-        return (true, "Registration successful. Please verify your email.", result);
+        return (true, "Registro exitoso. Por favor, verifica tu email.", result);
     }
 
     public async Task<(bool Success, string Message, AuthenticationResult? Result)> LoginAsync(
@@ -79,21 +79,21 @@ public class AuthenticationService : IAuthenticationService
     {
         // Validate inputs
         if (string.IsNullOrWhiteSpace(email))
-            return (false, "Email is required", null);
+            return (false, "Email es requerido", null);
 
         if (string.IsNullOrWhiteSpace(password))
-            return (false, "Password is required", null);
+            return (false, "Contraseña es requerida", null);
 
         var provider = await _providerRepository.GetByEmailAsync(email);
         
         if (provider == null)
-            return (false, "Invalid email or password", null);
+            return (false, "Email o contraseña inválidos", null);
 
         if (provider.Status != ProviderStatus.Active && provider.Status != ProviderStatus.PendingVerification)
-            return (false, "Account is suspended", null);
+            return (false, "Cuenta suspendida", null);
 
         if (!_passwordHashingService.VerifyPassword(password, provider.PasswordHash))
-            return (false, "Invalid email or password", null);
+            return (false, "Email o contraseña inválidos", null);
 
         var accessToken = _tokenService.GenerateAccessToken(provider.Id, provider.Email);
         var refreshToken = _tokenService.GenerateRefreshToken();
@@ -108,7 +108,7 @@ public class AuthenticationService : IAuthenticationService
             ExpiresAt: DateTimeOffset.UtcNow.AddHours(1)
         );
 
-        return (true, "Login successful", result);
+        return (true, "Inicio de sesión exitoso", result);
     }
 
     public async Task<(bool Success, string Message)> VerifyEmailAsync(string token)

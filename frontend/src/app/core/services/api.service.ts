@@ -90,24 +90,35 @@ export class ApiService {
 
   private handleError(error: any) {
     let errorMessage = 'An error occurred';
+    let errorResponse: any = { error: errorMessage };
 
     if (error.name === 'TimeoutError') {
       errorMessage = `Request timeout after ${environment.apiTimeout}ms`;
+      errorResponse = { error: errorMessage };
       console.error('[ApiService] Timeout Error:', errorMessage);
     } else if (error instanceof HttpErrorResponse) {
-      if (error.error instanceof ErrorEvent) {
-        // Client-side error
-        errorMessage = `Client Error: ${error.error.message}`;
+      // Si el servidor devolvió un JSON con estructura {error: "..."}, lo preservamos
+      if (error.error && typeof error.error === 'object' && error.error.error) {
+        errorResponse = error.error;
+        errorMessage = error.error.error;
+      } else if (error.error && typeof error.error === 'string') {
+        // Si es un string simple
+        errorResponse = { error: error.error };
+        errorMessage = error.error;
       } else {
-        // Server-side error
+        // Fallback a mensaje genérico
         errorMessage = `Server Error ${error.status}: ${error.statusText}`;
+        errorResponse = { error: errorMessage };
       }
       console.error('[ApiService] HTTP Error:', errorMessage);
     } else {
       console.error('[ApiService] Unexpected Error:', error);
     }
 
-    return throwError(() => new Error(errorMessage));
+    // Lanzar un error que preserve la estructura del backend
+    const err = new Error(errorMessage);
+    (err as any).error = errorResponse;
+    return throwError(() => err);
   }
 }
 

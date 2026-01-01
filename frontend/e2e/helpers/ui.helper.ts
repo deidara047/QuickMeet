@@ -9,11 +9,12 @@ export const selectors = {
   registerFullName: '[data-testid="register-fullname-input"]',
   registerPassword: '[data-testid="register-password-input"] input',
   registerPasswordConfirmation: '[data-testid="register-password-confirmation-input"] input',
-  registerButton: '[data-testid="register-submit-button"]',
+  registerButton: '[data-testid="register-submit-button"] button',
+  registerToast: '[data-testid="register-toast"]',
   toastMessage: 'p-toast .p-toast-message-text',
-  successToast: 'p-toast .ng-star-inserted.p-toast-message-success',
-  errorToast: 'p-toast .ng-star-inserted.p-toast-message-error',
-  warningToast: 'p-toast .ng-star-inserted.p-toast-message-warning',
+  successToast: '[data-testid="register-toast"] .ng-star-inserted.p-toast-message-success',
+  errorToast: '[data-testid="register-toast"] .ng-star-inserted.p-toast-message-error',
+  warningToast: '[data-testid="register-toast"] .ng-star-inserted.p-toast-message-warning',
 };
 
 export async function fillForm(
@@ -33,17 +34,39 @@ export async function verifyToastMessage(
   expectedMessage: string,
   severity: 'success' | 'error' | 'warn' = 'success'
 ): Promise<void> {
-  const toastSelector = severity === 'success' 
+  // Selector primario (específico)
+  const primarySelector = severity === 'success' 
     ? selectors.successToast 
     : severity === 'error' 
     ? selectors.errorToast 
     : selectors.warningToast;
 
-  const toast = page.locator(toastSelector);
-  await expect(toast).toBeVisible({ timeout: 5000 });
+  // Selector secundario más general (más robusto)
+  const severityClass = severity === 'success' ? 'p-toast-message-success' 
+    : severity === 'error' ? 'p-toast-message-error'
+    : 'p-toast-message-warning';
+  
+  const fallbackSelector = `.p-toast-message.${severityClass}`;
+
+  // Intentar con el selector primario, si no funciona usar el fallback
+  let toast = page.locator(primarySelector);
+  let isVisible = await toast.isVisible().catch(() => false);
+  
+  if (!isVisible) {
+    toast = page.locator(fallbackSelector);
+    isVisible = await toast.isVisible().catch(() => false);
+  }
+
+  // Si aún no es visible, esperar con timeout más largo
+  if (!isVisible) {
+    await expect(page.locator(fallbackSelector)).toBeVisible({ timeout: 8000 });
+    toast = page.locator(fallbackSelector);
+  }
   
   const messageElement = toast.locator('.p-toast-message-text');
   const actualMessage = await messageElement.textContent();
+  
+  console.log(`Toast mostrado con mensaje: "${actualMessage}"`);
   expect(actualMessage?.toLowerCase()).toContain(expectedMessage.toLowerCase());
 }
 

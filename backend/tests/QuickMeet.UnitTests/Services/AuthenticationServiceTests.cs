@@ -146,7 +146,7 @@ public class AuthenticationServiceTests
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("Email already registered", result.Message);
+        Assert.Contains("Email ya existe", result.Message);
         Assert.Null(result.Result);
     }
 
@@ -164,7 +164,7 @@ public class AuthenticationServiceTests
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("Username already taken", result.Message);
+        Assert.Contains("Usuario ya existe", result.Message);
         Assert.Null(result.Result);
     }
 

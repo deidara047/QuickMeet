@@ -42,7 +42,7 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9-]+$/)]],
+      username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50), Validators.pattern(/^[a-zA-Z0-9-_]+$/)]],
       fullName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(256)]],
       password: ['', [Validators.required, Validators.minLength(8), this.passwordStrengthValidator()]],
       passwordConfirmation: ['', Validators.required]
@@ -84,28 +84,12 @@ export class RegisterComponent implements OnInit {
 
     this.authService.register(formData).subscribe({
       next: () => {
-        const loginPayload = {
-          email: formData.email,
-          password: formData.password
-        };
-        this.authService.login(loginPayload).subscribe({
-          next: () => {
-            this.router.navigate(['/dashboard']);
-          },
-          error: (loginErr) => {
-            this.loading = false;
-            const errorMsg = loginErr.error?.error || 'Error al iniciar sesión automático';
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: errorMsg,
-              life: 3000
-            });
-          }
-        });
+        this.loading = false;
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading = false;
+        console.log(err);
         const errorMsg = err.error?.error || 'Error al crear la cuenta';
         this.messageService.add({
           severity: 'error',
@@ -113,9 +97,6 @@ export class RegisterComponent implements OnInit {
           detail: errorMsg,
           life: 3000
         });
-      },
-      complete: () => {
-        this.loading = false;
       }
     });
   }
@@ -127,41 +108,44 @@ export class RegisterComponent implements OnInit {
 
   getErrorMessage(fieldName: string): string {
     const field = this.form.get(fieldName);
+    const formErrors = this.form.errors;
 
-    if (!field?.errors) {
+    if (!field?.errors && !formErrors) {
       return '';
     }
 
-    if (field.errors['required']) {
-      return `${fieldName} es requerido`;
-    }
-
-    if (field.errors['email']) {
-      return 'Email inválido';
-    }
-
-    if (field.errors['minlength']) {
-      const minLength = field.errors['minlength'].requiredLength;
-      return `Mínimo ${minLength} caracteres`;
-    }
-
-    if (field.errors['maxlength']) {
-      const maxLength = field.errors['maxlength'].requiredLength;
-      return `Máximo ${maxLength} caracteres`;
-    }
-
-    if (field.errors['pattern']) {
-      if (fieldName === 'username') {
-        return 'Solo letras, números y guiones';
+    if (field?.errors) {
+      if (field.errors['required']) {
+        return `${fieldName} es requerido`;
       }
-      return 'Formato inválido';
+
+      if (field.errors['email']) {
+        return 'Email inválido';
+      }
+
+      if (field.errors['minlength']) {
+        const minLength = field.errors['minlength'].requiredLength;
+        return `Mínimo ${minLength} caracteres`;
+      }
+
+      if (field.errors['maxlength']) {
+        const maxLength = field.errors['maxlength'].requiredLength;
+        return `Máximo ${maxLength} caracteres`;
+      }
+
+      if (field.errors['pattern']) {
+        if (fieldName === 'username') {
+          return 'Solo letras, números, guiones y guiones bajos';
+        }
+        return 'Formato inválido';
+      }
+
+      if (field.errors['passwordStrength']) {
+        return 'Debe contener mayúscula, número y carácter especial';
+      }
     }
 
-    if (field.errors['passwordStrength']) {
-      return 'Debe contener mayúscula, número y carácter especial';
-    }
-
-    if (fieldName === 'passwordConfirmation' && this.form.errors?.['passwordMismatch']) {
+    if (fieldName === 'passwordConfirmation' && formErrors?.['passwordMismatch']) {
       return 'Las contraseñas no coinciden';
     }
 
