@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuickMeet.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using QuickMeet.Infrastructure.Data;
 namespace QuickMeet.Infrastructure.Migrations
 {
     [DbContext(typeof(QuickMeetDbContext))]
-    partial class QuickMeetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260102035123_AddAvailabilityAndTimeSlotEntities")]
+    partial class AddAvailabilityAndTimeSlotEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

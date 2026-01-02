@@ -29,6 +29,10 @@ public class Provider
     public DateTimeOffset? EmailVerifiedAt { get; set; }
     
     public ICollection<EmailVerificationToken> EmailVerificationTokens { get; set; } = [];
+    
+    public ICollection<ProviderAvailability> ProviderAvailabilities { get; set; } = [];
+    
+    public ICollection<TimeSlot> TimeSlots { get; set; } = [];
 }
 
 public enum ProviderStatus

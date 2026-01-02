@@ -12,6 +12,9 @@ public class QuickMeetDbContext : DbContext, IQuickMeetDbContext
 
     public DbSet<Provider> Providers { get; set; } = null!;
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; } = null!;
+    public DbSet<ProviderAvailability> ProviderAvailabilities { get; set; } = null!;
+    public DbSet<TimeSlot> TimeSlots { get; set; } = null!;
+    public DbSet<Break> Breaks { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,6 +22,9 @@ public class QuickMeetDbContext : DbContext, IQuickMeetDbContext
 
         ConfigureProvider(modelBuilder);
         ConfigureEmailVerificationToken(modelBuilder);
+        ConfigureProviderAvailability(modelBuilder);
+        ConfigureTimeSlot(modelBuilder);
+        ConfigureBreak(modelBuilder);
     }
 
     private static void ConfigureProvider(ModelBuilder modelBuilder)
@@ -109,5 +115,87 @@ public class QuickMeetDbContext : DbContext, IQuickMeetDbContext
 
         builder.HasIndex(t => new { t.ProviderId, t.IsUsed })
             .HasDatabaseName("IX_EmailVerificationToken_ProviderId_IsUsed");
+    }
+
+    private static void ConfigureProviderAvailability(ModelBuilder modelBuilder)
+    {
+        var builder = modelBuilder.Entity<ProviderAvailability>();
+
+        builder.HasKey(pa => pa.Id);
+
+        builder.Property(pa => pa.DayOfWeek)
+            .HasConversion<int>();
+
+        builder.Property(pa => pa.CreatedAt)
+            .HasColumnType("datetimeoffset")
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("SYSUTCDATETIME()");
+
+        builder.Property(pa => pa.UpdatedAt)
+            .HasColumnType("datetimeoffset")
+            .ValueGeneratedOnAddOrUpdate()
+            .HasDefaultValueSql("SYSUTCDATETIME()");
+
+        builder.HasIndex(pa => new { pa.ProviderId, pa.DayOfWeek })
+            .IsUnique()
+            .HasDatabaseName("IX_ProviderAvailability_ProviderId_DayOfWeek");
+
+        builder.HasOne(pa => pa.Provider)
+            .WithMany()
+            .HasForeignKey(pa => pa.ProviderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(pa => pa.Breaks)
+            .WithOne(b => b.ProviderAvailability)
+            .HasForeignKey(b => b.ProviderAvailabilityId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+
+    private static void ConfigureTimeSlot(ModelBuilder modelBuilder)
+    {
+        var builder = modelBuilder.Entity<TimeSlot>();
+
+        builder.HasKey(ts => ts.Id);
+
+        builder.Property(ts => ts.Status)
+            .HasConversion<int>();
+
+        builder.Property(ts => ts.CreatedAt)
+            .HasColumnType("datetimeoffset")
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("SYSUTCDATETIME()");
+
+        builder.Property(ts => ts.UpdatedAt)
+            .HasColumnType("datetimeoffset")
+            .ValueGeneratedOnAddOrUpdate()
+            .HasDefaultValueSql("SYSUTCDATETIME()");
+
+        builder.HasIndex(ts => new { ts.ProviderId, ts.StartTime })
+            .HasDatabaseName("IX_TimeSlot_ProviderId_StartTime");
+
+        builder.HasIndex(ts => new { ts.ProviderId, ts.Status })
+            .HasDatabaseName("IX_TimeSlot_ProviderId_Status");
+
+        builder.HasOne(ts => ts.Provider)
+            .WithMany()
+            .HasForeignKey(ts => ts.ProviderId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+
+    private static void ConfigureBreak(ModelBuilder modelBuilder)
+    {
+        var builder = modelBuilder.Entity<Break>();
+
+        builder.HasKey(b => b.Id);
+
+        builder.Property(b => b.CreatedAt)
+            .HasColumnType("datetimeoffset")
+            .ValueGeneratedOnAdd()
+            .HasDefaultValueSql("SYSUTCDATETIME()");
+
+        builder.HasOne(b => b.ProviderAvailability)
+            .WithMany(pa => pa.Breaks)
+            .HasForeignKey(b => b.ProviderAvailabilityId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
