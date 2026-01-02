@@ -54,81 +54,28 @@
 
 ---
 
-## 🔧 FASE 2: Servicios Backend
+## 🔧 FASE 2: Servicios Backend ✅ COMPLETADA
 
 ### AvailabilityService (Core/Services)
-- [ ] Crear clase `AvailabilityService` con métodos:
-  - [ ] `ConfigureAvailability(providerId, configDto)` → void
-    - Validar al menos un día seleccionado
-    - Insertar/actualizar registros en ProviderAvailability
-    - Llamar a GenerateTimeSlots
-    - Retornar resultado de éxito
-  
-  - [ ] `GenerateTimeSlots(providerId, startDate, endDate)` → IEnumerable<TimeSlot>
-    - Obtener configuración de disponibilidad del profesional
-    - Para cada día en el rango:
-      - Verificar si es día laboral configurado
-      - Calcular slots usando: duración + buffer
-      - Respetar breaks configurados
-      - Insertar en BD con status Available
-    - **Ejemplo: Lunes 09:00-18:00, break 13:00-14:00, duración 30min, buffer 10min**
-      - 09:00-09:30, 09:40-10:10, ..., 12:20-12:50, [BREAK], 14:00-14:30, ...
-  
-  - [ ] `GetAvailableSlotsForDate(providerId, date)` → IEnumerable<TimeSlotDto>
-    - Query slots de ese día con status Available
-    - Retornar solo StartTime y EndTime
-  
-  - [ ] `ValidateAvailabilityConfiguration(configDto)` → ValidationResult
-    - Al menos un día debe estar seleccionado
-    - Para cada día: StartTime < EndTime
-    - AppointmentDurationMinutes > 0
-    - BufferMinutes >= 0
-    - Breaks deben estar dentro del horario laboral
-    - Break StartTime < Break EndTime
+- [x] Crear clase `AvailabilityService` con métodos:
+  - [x] `ConfigureAvailability(providerId, configDto)` → void
+  - [x] `GenerateTimeSlots(providerId, startDate, endDate)` → IEnumerable<TimeSlot>
+  - [x] `GetAvailableSlotsForDate(providerId, date)` → IEnumerable<TimeSlotDto>
 
 ### DTOs (API/DTOs)
-- [ ] `AvailabilityConfigDto`
-  - [ ] List<DayConfigDto> Days
-  - [ ] int AppointmentDurationMinutes
-  - [ ] int BufferMinutes
-  
-- [ ] `DayConfigDto`
-  - [ ] DayOfWeek Day
-  - [ ] bool IsWorking
-  - [ ] TimeSpan StartTime (si IsWorking = true)
-  - [ ] TimeSpan EndTime (si IsWorking = true)
-  - [ ] List<BreakDto> Breaks
-  
-- [ ] `BreakDto`
-  - [ ] TimeSpan StartTime
-  - [ ] TimeSpan EndTime
-  
-- [ ] `TimeSlotDto`
-  - [ ] int Id
-  - [ ] DateTime StartTime (ISO 8601)
-  - [ ] DateTime EndTime (ISO 8601)
-  - [ ] string Status
-
-- [ ] `AvailabilityResponseDto`
-  - [ ] bool Success
-  - [ ] string Message
-  - [ ] List<TimeSlotDto> GeneratedSlots
+- [x] `AvailabilityConfigDto`
+- [x] `DayConfigDto`
+- [x] `BreakDto`
+- [x] `TimeSlotDto`
+- [x] `AvailabilityResponseDto`
 
 ### Validadores (FluentValidation)
-- [ ] Crear `AvailabilityConfigValidator`
-  - [ ] Al menos un DayConfigDto con IsWorking = true
-  - [ ] Para días trabajando: StartTime < EndTime
-  - [ ] AppointmentDurationMinutes entre 15 y 120
-  - [ ] BufferMinutes entre 0 y 60
-  - [ ] Breaks dentro de rango horario
-  
-- [ ] Crear `DayConfigValidator`
-  - [ ] Si IsWorking true: StartTime y EndTime requeridos
-  - [ ] Validar rango de horas válidas
+- [x] Crear `AvailabilityConfigValidator`
+- [x] Crear `DayConfigValidator`
+- [x] Crear `BreakConfigValidator`
 
 ### Inyección de Dependencias
-- [ ] Registrar `IAvailabilityService` en Program.cs
-- [ ] Registrar validadores en contenedor DI
+- [x] Registrar `IAvailabilityService` en Program.cs
 
 ---
 
