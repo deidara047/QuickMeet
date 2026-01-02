@@ -87,6 +87,10 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  getCurrentUserId(): string | null {
+    return this.currentUserSubject.value?.providerId || null;
+  }
+
   isAuthenticated(): boolean {
     return !!this.getAccessToken();
   }

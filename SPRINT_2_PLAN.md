@@ -1,9 +1,11 @@
 # Sprint 2: Gestión de Perfil y Disponibilidad
 
-**Estado:** En Progreso (Fase 2)  
+**Estado:** En Progreso (Fase 4)  
 **Duración estimada:** 7-8 horas  
 **Inicio:** Enero 1, 2026  
 **Fase 1 Completada:** ✅ Enero 1, 2026 - Entidades y Migraciones  
+**Fase 2 Completada:** ✅ Enero 1, 2026 - Servicios Backend  
+**Fase 3 Completada:** ✅ Enero 1, 2026 - AvailabilityController  
 **Objetivo:** Implementar configuración de perfil público y sistema de disponibilidad con generación automática de slots
 
 ---
@@ -79,32 +81,20 @@
 
 ---
 
-## 🌐 FASE 3: Controller
+## 🌐 FASE 3: Controller ✅ COMPLETADA
 
 ### AvailabilityController (API/Controllers)
-- [ ] Crear clase `AvailabilityController`
-  - [ ] POST `/api/availability/configure` [Autorizado]
-    - Parámetro: `AvailabilityConfigDto`
-    - Validar DTO con FluentValidation
-    - Obtener ProviderId del usuario autenticado
-    - Llamar a AvailabilityService.ConfigureAvailability
-    - Retornar HTTP 200 con AvailabilityResponseDto
-  
-  - [ ] GET `/api/availability/{providerId}` [Autorizado]
-    - Validar que ProviderId = usuario logueado (solo su propia config)
-    - Retornar AvailabilityConfigDto actual
-    - Si no existe, retornar HTTP 404
-  
-  - [ ] PUT `/api/availability/{providerId}` [Autorizado]
-    - Similar a POST pero actúa como actualización
-    - Limpiar slots futuros antes de regenerar
-    - Retornar HTTP 200 con slots actualizados
+- [x] Crear clase `AvailabilityController`
+  - [x] POST `/api/availability/configure` [Autorizado]
+  - [x] GET `/api/availability/{providerId}` [Autorizado]
+  - [x] PUT `/api/availability/{providerId}` [Autorizado]
+  - [x] GET `/api/availability/slots/{providerId}` [Público]
 
-- [ ] Manejo de errores
-  - [ ] Try-catch para excepciones
-  - [ ] Retornar HTTP 400 para validaciones fallidas
-  - [ ] Retornar HTTP 401 para no autorizados
-  - [ ] Retornar HTTP 500 para errores del servidor
+- [x] Manejo de errores
+  - [x] Try-catch para excepciones
+  - [x] Retornar HTTP 400 para validaciones fallidas
+  - [x] Retornar HTTP 401 para no autorizados
+  - [x] Retornar HTTP 500 para errores del servidor
 
 ---
 
