@@ -46,14 +46,18 @@ builder.Services.AddCors(options =>
     });
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// NO registrar SQL Server en ambiente Test - será configurado por la factory
+if (!builder.Environment.IsEnvironment("Test"))
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-builder.Services.AddDbContext<QuickMeetDbContext>(options =>
-    options.UseSqlServer(connectionString, sqlOptions =>
-        sqlOptions.MigrationsAssembly("QuickMeet.Infrastructure")));
+    builder.Services.AddDbContext<QuickMeetDbContext>(options =>
+        options.UseSqlServer(connectionString, sqlOptions =>
+            sqlOptions.MigrationsAssembly("QuickMeet.Infrastructure")));
 
-builder.Services.AddScoped<IQuickMeetDbContext>(sp => sp.GetRequiredService<QuickMeetDbContext>());
+    builder.Services.AddScoped<IQuickMeetDbContext>(sp => sp.GetRequiredService<QuickMeetDbContext>());
+}
 builder.Services.AddScoped<IProviderRepository, ProviderRepository>();
 builder.Services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
 builder.Services.AddScoped<ITimeSlotRepository, TimeSlotRepository>();
@@ -94,8 +98,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpLogging();
 
-// Aplicar migraciones de forma asíncrona
-await ApplyMigrationsAsync(app);
+// Aplicar migraciones de forma asíncrona (solo en ambientes que NO sean Test)
+if (!app.Environment.IsEnvironment("Test"))
+{
+    await ApplyMigrationsAsync(app);
+}
 
 app.UseCors("AllowFrontend");
 app.UseAuthentication();

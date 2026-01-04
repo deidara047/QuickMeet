@@ -1,11 +1,14 @@
 # Sprint 2: Gestión de Perfil y Disponibilidad
 
-**Estado:** En Progreso (Fase 4)  
-**Duración estimada:** 7-8 horas  
+**Estado:** En Progreso (Fase 6 - Backend E2E)  
+**Duración estimada:** 10-11 horas total (6.5h Backend + 7.5-8.5h Frontend)  
 **Inicio:** Enero 1, 2026  
 **Fase 1 Completada:** ✅ Enero 1, 2026 - Entidades y Migraciones  
 **Fase 2 Completada:** ✅ Enero 1, 2026 - Servicios Backend  
 **Fase 3 Completada:** ✅ Enero 1, 2026 - AvailabilityController  
+**Fase 4 Completada:** ✅ Enero 1, 2026 - Integration Tests Backend
+**Fase 5 Completada:** ✅ Enero 3, 2026 - AvailabilityControllerIntegrationTests  
+**Fase 6 En Progreso:** ⏳ E2E Backend (Broche de Oro Backend)  
 **Objetivo:** Implementar configuración de perfil público y sistema de disponibilidad con generación automática de slots
 
 ---
@@ -237,6 +240,71 @@
   - [x] PUT /api/availability/{providerId} actualiza correctamente
   - [x] Requiere autorización (401 sin token)
 
+### E2E Tests - Backend (xUnit + HttpClient) [BROCHE DE ORO BACKEND]
+
+**Patrón:** Heredan de `IntegrationTestBase`, prueban flujos completos de usuario vía HTTP real
+
+#### Complete Availability Configuration Flow
+- [ ] `E2E_FullAvailabilitySetup_Success`
+  - [ ] **Setup:** Register provider + obtain JWT token
+  - [ ] **Step 1:** POST `/api/availability/configure` with valid multi-day config
+    - [ ] Data: Lunes-Viernes, 09:00-18:00, break 13:00-14:00, duration 30min, buffer 10min
+    - [ ] Assert: HTTP 200 received
+    - [ ] Assert: Response body contains configuration data
+  - [ ] **Step 2:** Verify database persistence
+    - [ ] Query ProviderAvailabilities table → verify 5 records (one per day)
+    - [ ] Query TimeSlots table → verify ~250 records generated
+    - [ ] Query Breaks table → verify 5 records (one per working day)
+  - [ ] **Step 3:** GET `/api/availability/{providerId}` with token
+    - [ ] Assert: HTTP 200 received
+    - [ ] Assert: Response matches configuration sent
+  - [ ] **Step 4:** Update configuration
+    - [ ] PUT `/api/availability/{providerId}` with new schedule (reduced hours)
+    - [ ] Assert: HTTP 200 received
+    - [ ] Assert: Database shows old slots deleted
+    - [ ] Assert: New TimeSlots generated with new schedule
+  - [ ] **Cleanup:** Verify final state in database
+
+#### Authorization & Security Edge Cases
+- [ ] `E2E_UnauthorizedRequests_Fail`
+  - [ ] POST without token → Assert HTTP 401
+  - [ ] POST with expired token → Assert HTTP 401
+  - [ ] POST with invalid token format → Assert HTTP 401
+  - [ ] GET with another provider's token → Assert HTTP 403 Forbidden
+  - [ ] PUT with different provider's token → Assert HTTP 403 Forbidden
+
+#### Data Validation at API Boundary
+- [ ] `E2E_InvalidConfigurations_ReturnBadRequest`
+  - [ ] POST with no working days → Assert HTTP 400 + error message
+  - [ ] POST with StartTime > EndTime → Assert HTTP 400 + error message
+  - [ ] POST with break outside working hours → Assert HTTP 400 + error message
+  - [ ] POST with negative buffer → Assert HTTP 400 + error message
+  - [ ] POST with zero appointment duration → Assert HTTP 400 + error message
+  - [ ] POST with malformed JSON → Assert HTTP 400
+
+#### Concurrent Request Handling
+- [ ] `E2E_ConcurrentUpdates_HandledCorrectly`
+  - [ ] Register Provider A and Provider B simultaneously
+  - [ ] Provider A updates availability while Provider B updates
+    - [ ] Assert: Both requests succeed (HTTP 200)
+    - [ ] Assert: Data is not mixed in database
+    - [ ] Assert: Each provider's slots match their config
+  - [ ] Same provider sends two POST requests rapidly (idempotency)
+    - [ ] Assert: Second request overwrites first
+    - [ ] Assert: Database has only latest configuration
+
+#### Time Zone & DateTime Consistency
+- [ ] `E2E_TimeSlots_GeneratedInUTCISO8601`
+  - [ ] POST configuration with times (09:00, 18:00)
+  - [ ] GET response TimeSlots
+    - [ ] Assert: Response format is ISO 8601 (e.g., "2026-01-15T09:00:00Z")
+    - [ ] Assert: All dates end with "Z" (UTC indicator)
+  - [ ] Query database directly via DbContext
+    - [ ] Assert: Stored dates are datetimeoffset in UTC
+    - [ ] Assert: No timezone conversion issues
+
+---
+
 ### Component Tests - Frontend (Vitest)
 
 #### AvailabilityConfiguratorComponent
@@ -424,71 +492,11 @@
   - [ ] GET availability endpoint → returns latest config
   - [ ] Verify no data mixing between endpoints
 
-### E2E Tests - Backend (Playwright con HttpClient)
-
-#### Complete Availability Setup Flow (Backend Only)
-- [ ] `should_complete_full_availability_configuration_flow`
-  - [ ] **Setup:** Register provider + obtain JWT token
-  - [ ] **Step 1:** POST `/api/availability/configure` with valid multi-day config
-    - [ ] Data: Lunes-Viernes, 09:00-18:00, break 13:00-14:00, duration 30min, buffer 10min
-    - [ ] Assert: HTTP 200 received
-    - [ ] Assert: Response contains 250 generated TimeSlots (5 days × 50 slots)
-    - [ ] Assert: Status = "Available" for all slots
-  - [ ] **Step 2:** Verify database persistence
-    - [ ] Query ProviderAvailabilities table → should have 5 records (one per day)
-    - [ ] Query TimeSlots table → should have ~250 records
-    - [ ] Query Breaks table → should have 5 records (one per working day)
-  - [ ] **Step 3:** GET `/api/availability/{providerId}` with token
-    - [ ] Assert: HTTP 200 received
-    - [ ] Assert: Response matches configuration sent
-  - [ ] **Step 4:** Update configuration
-    - [ ] PUT `/api/availability/{providerId}` with new schedule (reduced hours)
-    - [ ] Assert: HTTP 200 received
-    - [ ] Assert: Old TimeSlots are deleted
-    - [ ] Assert: New TimeSlots generated with new schedule
-  - [ ] **Cleanup:** Verify final state in database
-
-#### Authorization & Security Edge Cases
-- [ ] `should_reject_unauthorized_availability_requests`
-  - [ ] POST without token → HTTP 401
-  - [ ] POST with expired token → HTTP 401
-  - [ ] POST with invalid token → HTTP 401
-  - [ ] GET with another provider's token → HTTP 403 (Forbidden)
-  - [ ] PUT with different provider's token → HTTP 403 (Forbidden)
-
-#### Data Validation at API Boundary
-- [ ] `should_reject_invalid_configurations_at_api_level`
-  - [ ] POST with no working days → HTTP 400 + error message
-  - [ ] POST with StartTime > EndTime → HTTP 400 + error message
-  - [ ] POST with break outside working hours → HTTP 400 + error message
-  - [ ] POST with negative buffer → HTTP 400 + error message
-  - [ ] POST with zero appointment duration → HTTP 400 + error message
-  - [ ] POST with malformed JSON → HTTP 400
-
-#### Concurrent Request Handling
-- [ ] `should_handle_concurrent_availability_updates`
-  - [ ] Provider A updates availability simultaneously with Provider B
-    - [ ] Assert: Both requests succeed (HTTP 200)
-    - [ ] Assert: Data is not mixed in database
-    - [ ] Assert: Each provider's slots match their config
-  - [ ] Same provider sends two POST requests rapidly
-    - [ ] Assert: Second request overwrites first (idempotent)
-    - [ ] Assert: Database has only latest configuration
-
-#### Time Zone & DateTime Consistency
-- [ ] `should_generate_slots_in_utc_iso8601_format`
-  - [ ] POST configuration with times (09:00, 18:00)
-  - [ ] Assert: Response TimeSlots have ISO 8601 format (e.g., "2026-01-15T09:00:00Z")
-  - [ ] Assert: All dates end with "Z" (UTC indicator)
-  - [ ] Query database directly
-  - [ ] Assert: Stored dates are datetimeoffset in UTC
-  - [ ] Assert: No timezone conversion issues
-
 #### Coverage Goals
 - [ ] Backend Unit Tests: >= 80% overall
 - [ ] AvailabilityService: 85%+
 - [ ] AvailabilityController: 90%+
-- [ ] Backend E2E: 100% of happy path + critical edge cases
+- [ ] Backend E2E (Integration): 100% of happy path + critical edge cases (xUnit + HttpClient)
 - [ ] Frontend Components: 75%+ (after frontend implementation)
 
 ---
@@ -496,103 +504,151 @@
 ## 🕐 ORDEN DE IMPLEMENTACIÓN RECOMENDADO
 
 ```
-FASE BACKEND (COMPLETADA)
-═══════════════════════════
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   FASE BACKEND - CIERRE CON E2E                           ║
+╚════════════════════════════════════════════════════════════════════════════╝
 
-1. Backend Entities + Migration              [30 min] ✅
+1. Backend Entities + Migration              [30 min] ✅ COMPLETADO
    - Crear entidades
    - DbContext updates
    - Migración y verificación BD
 
-2. Backend AvailabilityService               [1h 30min] ✅
+2. Backend AvailabilityService               [1h 30min] ✅ COMPLETADO
    - ConfigureAvailability
    - GenerateTimeSlots
    - GetAvailableSlotsForDate
    - Validadores
 
-3. Backend Controller + DTOs                 [45 min] ✅
+3. Backend Controller + DTOs                 [45 min] ✅ COMPLETADO
    - AvailabilityController
    - DTOs TypeScript-compatible
    - Error handling
 
-4. Backend Unit Tests                        [1h] ✅
+4. Backend Unit Tests                        [1h] ✅ COMPLETADO
    - Tests de lógica crítica
    - Tests de validación
    - Cobertura 80%+
 
-5. Backend E2E Tests (Playwright + HttpClient) [1.5h] ⏳ [DEBE EJECUTARSE ANTES DE FRONTEND]
-   - Complete availability configuration flow
-   - Authorization & security edge cases
-   - Data validation at API boundary
-   - Concurrent request handling
-   - UTC/ISO 8601 format verification
+5. Backend Integration Tests                 [1h] ✅ COMPLETADO
+   - AvailabilityControllerIntegrationTests
+   - 15 tests (happy path + validations + auth)
+   - Assertions en HTTP + BD + lógica
+
+═══════════════════════════════════════════════════════════════════════════════
+6. 🎖️  BACKEND E2E TESTS - xUnit + HttpClient (BROCHE DE ORO BACKEND) [1.5h] ⏳ SIGUIENTE PASO
+   - Complete availability configuration flow (register → configure → get → update)
+   - Authorization & security edge cases (no token, invalid token, forbidden)
+   - Data validation at API boundary (6 invalid scenarios)
+   - Concurrent request handling (race conditions, idempotency)
+   - UTC/ISO 8601 format verification (API response + DB storage)
+   
+   Patrón: Heredan de IntegrationTestBase, prueban flujos completos vía HTTP
+   Naming: E2E_[Scenario]_[Result] (ej: E2E_FullAvailabilitySetup_Success)
+   
+   ► SI TODOS LOS E2E BACKEND PASAN: BACKEND TERMINADO ✅
+   ► Si no pasan: FIX y re-run hasta pasar 100%
+═══════════════════════════════════════════════════════════════════════════════
 
 
-FASE FRONTEND (EN PROGRESO)
-═════════════════════════════
+╔════════════════════════════════════════════════════════════════════════════╗
+║                 FASE FRONTEND - CIERRE CON E2E                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
 
-6. Frontend ProfileService                   [30 min]
-   - Crear servicio
-   - Interfaces TypeScript
+7. Frontend ProfileService                   [30 min]
+   - Crear servicio en core/services/
+   - Interfaces TypeScript (ProviderProfile, BreakConfig, etc)
    - Métodos: updateProfile, getProfile, uploadPhoto
 
-7. Frontend Dashboard Container              [45 min]
-   - Layout principal
-   - Inyección de dependencias
-   - Navegación a ProfileEditor y AvailabilityConfigurator
+8. Frontend Models & DTOs                    [20 min]
+   - ProviderProfile interface
+   - AvailabilityConfig interface
+   - TimeSlot interface
+   - Align con backend response format
 
-8. Frontend AvailabilityConfigurator         [2h]
-   - Formulario reactivo con FormArray
-   - Vista previa de slots (cálculo local)
-   - Validaciones en tiempo real
-   - Manejo de breaks
-   - Save/Update API calls
+9. Frontend Dashboard Container              [45 min]
+   - ng generate component features/dashboard/dashboard
+   - Layout principal con sections
+   - Inyección: AuthService, ProfileService, AvailabilityService
+   - Componentes hijos: ProfileEditor, AvailabilityConfigurator
 
-9. Frontend ProfileEditor                    [45 min]
-   - Formulario de perfil
-   - Upload de foto con preview
-   - Validaciones
-   - Save API calls
+10. Frontend ProfileEditor Component         [45 min]
+    - ng generate component features/dashboard/profile-editor
+    - Formulario reactivo con nombre, descripción, teléfono, foto
+    - Upload con preview
+    - Validaciones en tiempo real
+    - Save → ProfileService.updateProfile()
 
-10. Frontend Component Tests (Vitest)        [1h 30min]
-    - Tests de AvailabilityConfigurator
-    - Tests de ProfileEditor
+11. Frontend AvailabilityConfigurator        [2h]
+    - ng generate component features/dashboard/availability-configurator
+    - Formulario reactivo con FormArray
+    - 7 day toggles con controles de tiempo
+    - Add/remove breaks functionality
+    - Duración y buffer selects
+    - Local preview calculation
+    - Save → AvailabilityService.configure()
+
+12. Frontend Component Tests (Vitest)        [1h 30min]
+    - AvailabilityConfiguratorComponent tests
+    - ProfileEditorComponent tests
     - Mocking de servicios
     - Validación de formularios
+    - Coverage 75%+
 
-11. Frontend E2E Tests (Playwright)          [1.5h] ⏳ [FASE FINAL DE SPRINT 2]
-    - Complete dashboard setup flow
+═══════════════════════════════════════════════════════════════════════════════
+13. 🎖️  FRONTEND E2E TESTS (BROCHE DE ORO TOTAL)  [1.5h] ⏳ FASE FINAL
+    - Complete dashboard setup flow (Profile + Availability)
     - Form validation & error handling
-    - Responsive design verification
+    - Responsive design verification (Desktop, Tablet, Mobile)
     - Performance & loading states
     - Integration with Profile Service
     - Reload & persistence verification
+    
+    ► SI TODOS LOS E2E FRONTEND PASAN: SPRINT 2 COMPLETADO ✅✅✅
+    ► Si no pasan: FIX y re-run hasta pasar 100%
+═══════════════════════════════════════════════════════════════════════════════
 ```
 
-**Total estimado:** 10-11 horas (Backend ✅ completado, Frontend 6-7h restantes)
+**Total estimado:** 10-11 horas
+- Backend: 5 horas (Fases 1-5) + 1.5h E2E Backend (Fase 6) = 6.5h ✅ [EN PROGRESO]
+- Frontend: 6-7 horas (Fases 7-12) + 1.5h E2E Frontend (Fase 13) = 7.5-8.5h [PRÓXIMO]
 
 ---
 
 ## ✅ DEFINICIÓN DE COMPLETITUD
 
-Sprint 2 se considera **COMPLETADO** cuando:
+### FASE BACKEND COMPLETA CUANDO:
+- [x] Fases 1-5 completadas ✅
+- [x] Unit tests: 41 tests pasando (26 Auth + 15 Availability) ✅
+- [x] Integration tests: 15 tests pasando (AvailabilityController) ✅
+- [ ] **FASE 6: E2E Backend: TODOS los tests pasando** ⏳ **[BROCHE DE ORO BACKEND]**
 
-- [x] Todas las entidades creadas y migraciones ejecutadas ✅
-- [x] AvailabilityService implementado con lógica de cálculo de slots ✅
-- [x] Controller expone 3 endpoints (POST configure, GET config, PUT update) ✅
-- [x] DTOs validados con FluentValidation ✅
-- [ ] Backend E2E tests ejecutados y TODOS pasando ⏳ **[BLOQUEADOR ANTES DE FRONTEND]**
-- [ ] Dashboard renderiza correctamente (Fase 4)
-- [ ] AvailabilityConfigurator permite configurar completo (Fase 4)
-- [ ] ProfileEditor permite editar datos públicos (Fase 4)
-- [ ] Unit tests: 80%+ cobertura en backend ✅
-- [ ] Component tests: 75%+ en frontend (Fase 4)
-- [ ] E2E test Frontend: Flow completo funciona (Fase 4 Final)
+### FASE FRONTEND COMPLETA CUANDO:
+- [ ] Fases 7-12 completadas (Servicios + Componentes + Unit Tests)
+- [ ] Component tests: 75%+ cobertura
+- [ ] **FASE 13: E2E Frontend: TODOS los tests pasando** ⏳ **[BROCHE DE ORO FRONTEND - CIERRE DE SPRINT 2]**
+
+### SPRINT 2 COMPLETADO CUANDO:
+✅ BACKEND:
+- [x] Entidades y migraciones ejecutadas
+- [x] AvailabilityService con lógica completa
+- [x] Controller con 4 endpoints
+- [x] DTOs validados con FluentValidation
+- [x] Unit tests pasando
+- [x] Integration tests pasando
+- [ ] **E2E Backend tests PASANDO** ⏳ [PENDIENTE]
+
+✅ FRONTEND:
+- [ ] Dashboard, ProfileEditor, AvailabilityConfigurator implementados
+- [ ] Component tests pasando
+- [ ] **E2E Frontend tests PASANDO** ⏳ [PENDIENTE]
+
+✅ GENERAL:
 - [ ] Sin errores de compilación (backend y frontend)
 - [ ] Verificación manual en navegador: http://localhost:4200/dashboard
-- [ ] Verificación manual de BD: tablas creadas con datos
+- [ ] Verificación manual de BD: tablas creadas y datos persistidos
 - [ ] Backend E2E resultados documentados
 - [ ] Frontend E2E resultados documentados
+- [ ] **PROYECTO LISTO PARA SPRINT 3** 🚀
 
 ---
 

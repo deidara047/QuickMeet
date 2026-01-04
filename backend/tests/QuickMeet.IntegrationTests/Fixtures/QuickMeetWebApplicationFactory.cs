@@ -1,7 +1,9 @@
 using System.Linq;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -14,46 +16,53 @@ namespace QuickMeet.IntegrationTests.Fixtures;
 
 public class QuickMeetWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly string _dbName = $"QuickMeetTestDb_{Guid.NewGuid()}";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Configurar ambiente como Test para evitar Migrate() en Program.cs
         builder.UseEnvironment("Test");
 
-        builder.ConfigureServices(services =>
+        builder.ConfigureTestServices(services =>
         {
-            // PRIMERO: Obtener el proveedor de servicios actual para hacer debug
-            var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(DbContextOptions<QuickMeetDbContext>));
-            
-            // Remover TODOS los descriptores de DbContextOptions previos
-            var dbContextOptionsDescriptors = services
-                .Where(d => d.ServiceType.Name.Contains("DbContextOptions"))
-                .ToList();
-            
-            foreach (var d in dbContextOptionsDescriptors)
-            {
-                services.Remove(d);
-            }
-
-            // Remover DbContext y sus interfaces
-            services.RemoveAll<QuickMeetDbContext>();
-            services.RemoveAll<DbContextOptions<QuickMeetDbContext>>();
-            services.RemoveAll(typeof(IQuickMeetDbContext));
-
-            // Agregar DbContext NUEVO con InMemory Database
+            // 1. Registrar DbContext con InMemory (SQL Server NO está registrado en ambiente Test)
             services.AddDbContext<QuickMeetDbContext>(options =>
             {
-                options.UseInMemoryDatabase("QuickMeetTestDb");
-            }, ServiceLifetime.Scoped);
+                options.UseInMemoryDatabase(_dbName);
+            });
+            
+            services.AddScoped<IQuickMeetDbContext>(sp => 
+                sp.GetRequiredService<QuickMeetDbContext>());
 
-            // Re-registrar la interfaz con el nuevo DbContext
-            services.AddScoped<IQuickMeetDbContext>(sp => sp.GetRequiredService<QuickMeetDbContext>());
-
-            // Remover IEmailService real y reemplazar con Mock
+            // 2. Mock de Email Service
+            var emailMock = new Mock<IEmailService>();
+            emailMock
+                .Setup(x => x.SendEmailVerificationAsync(
+                    It.IsAny<string>(), 
+                    It.IsAny<string>(), 
+                    It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            emailMock
+                .Setup(x => x.SendWelcomeEmailAsync(
+                    It.IsAny<string>(), 
+                    It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+            
             services.RemoveAll<IEmailService>();
-            services.AddSingleton<IEmailService>(new Mock<IEmailService>().Object);
+            services.AddSingleton(emailMock.Object);
+
+            // 3. Reemplazar autenticación JWT por TestAuthHandler
+            services.PostConfigure<AuthenticationOptions>(options =>
+            {
+                options.DefaultAuthenticateScheme = TestAuthHandler.SchemeName;
+                options.DefaultChallengeScheme = TestAuthHandler.SchemeName;
+            });
+
+            services.AddAuthentication()
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                    TestAuthHandler.SchemeName, 
+                    options => { });
         });
 
-        // Configurar logging: solo warnings y errores
         builder.ConfigureLogging(logging =>
         {
             logging.ClearProviders();
@@ -61,3 +70,4 @@ public class QuickMeetWebApplicationFactory : WebApplicationFactory<Program>
         });
     }
 }
+
