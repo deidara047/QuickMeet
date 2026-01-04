@@ -366,7 +366,7 @@ public class AuthenticationServiceTests
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("Invalid email or password", result.Message);
+        Assert.Contains("Email o contraseña inválidos", result.Message);
         Assert.Null(result.Result);
     }
 
@@ -392,7 +392,7 @@ public class AuthenticationServiceTests
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("Invalid email or password", result.Message);
+        Assert.Contains("Email o contraseña inválidos", result.Message);
     }
 
     [Fact]
@@ -417,7 +417,7 @@ public class AuthenticationServiceTests
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("Account is suspended", result.Message);
+        Assert.Contains("Cuenta suspendida", result.Message);
     }
 
     [Fact]

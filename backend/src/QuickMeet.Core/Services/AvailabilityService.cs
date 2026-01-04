@@ -5,11 +5,18 @@ namespace QuickMeet.Core.Services;
 
 public class AvailabilityService : IAvailabilityService
 {
-    private readonly IQuickMeetDbContext _dbContext;
+    private readonly IProviderRepository _providerRepository;
+    private readonly IAvailabilityRepository _availabilityRepository;
+    private readonly ITimeSlotRepository _timeSlotRepository;
 
-    public AvailabilityService(IQuickMeetDbContext dbContext)
+    public AvailabilityService(
+        IProviderRepository providerRepository,
+        IAvailabilityRepository availabilityRepository,
+        ITimeSlotRepository timeSlotRepository)
     {
-        _dbContext = dbContext;
+        _providerRepository = providerRepository;
+        _availabilityRepository = availabilityRepository;
+        _timeSlotRepository = timeSlotRepository;
     }
 
     public async Task ConfigureAvailabilityAsync(int providerId, AvailabilityConfig config)
@@ -19,20 +26,15 @@ public class AvailabilityService : IAvailabilityService
             throw new InvalidOperationException("Al menos un día debe estar configurado como laboral.");
         }
 
-        var provider = await _dbContext.Providers.FindAsync(providerId);
+        var provider = await _providerRepository.GetByIdAsync(providerId);
         if (provider == null)
         {
             throw new InvalidOperationException("Profesional no encontrado.");
         }
 
-        var existingAvailabilities = _dbContext.ProviderAvailabilities
-            .Where(pa => pa.ProviderId == providerId)
-            .ToList();
+        await _availabilityRepository.RemoveByProviderIdAsync(providerId);
 
-        foreach (var availability in existingAvailabilities)
-        {
-            _dbContext.ProviderAvailabilities.Remove(availability);
-        }
+        var newAvailabilities = new List<ProviderAvailability>();
 
         foreach (var dayConfig in config.Days.Where(d => d.IsWorking))
         {
@@ -75,32 +77,24 @@ public class AvailabilityService : IAvailabilityService
                 }
             }
 
-            _dbContext.ProviderAvailabilities.Add(availability);
+            newAvailabilities.Add(availability);
         }
 
-        await _dbContext.SaveChangesAsync();
+        await _availabilityRepository.AddRangeAsync(newAvailabilities);
+        await _availabilityRepository.SaveChangesAsync();
 
         await GenerateTimeSlotsAsync(providerId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(60));
     }
 
     public async Task<IEnumerable<TimeSlot>> GenerateTimeSlotsAsync(int providerId, DateTimeOffset startDate, DateTimeOffset endDate)
     {
-        var existingSlots = _dbContext.TimeSlots
-            .Where(ts => ts.ProviderId == providerId && ts.StartTime >= startDate)
-            .ToList();
+        await _timeSlotRepository.RemoveByProviderIdAndDateRangeAsync(providerId, startDate);
 
-        foreach (var slot in existingSlots)
-        {
-            _dbContext.TimeSlots.Remove(slot);
-        }
-
-        var availabilities = _dbContext.ProviderAvailabilities
-            .Where(pa => pa.ProviderId == providerId)
-            .ToList();
+        var availabilities = await _availabilityRepository.GetByProviderIdAsync(providerId);
 
         if (!availabilities.Any())
         {
-            await _dbContext.SaveChangesAsync();
+            await _timeSlotRepository.SaveChangesAsync();
             return [];
         }
 
@@ -131,33 +125,20 @@ public class AvailabilityService : IAvailabilityService
             currentDate = currentDate.AddDays(1);
         }
 
-        _dbContext.TimeSlots.AddRange(generatedSlots);
-        await _dbContext.SaveChangesAsync();
+        await _timeSlotRepository.AddRangeAsync(generatedSlots);
+        await _timeSlotRepository.SaveChangesAsync();
 
         return generatedSlots;
     }
 
     public async Task<IEnumerable<TimeSlot>> GetAvailableSlotsForDateAsync(int providerId, DateTimeOffset date)
     {
-        var startOfDay = date.Date;
-        var endOfDay = startOfDay.AddDays(1);
-
-        var slots = _dbContext.TimeSlots
-            .Where(ts => ts.ProviderId == providerId &&
-                         ts.StartTime >= startOfDay &&
-                         ts.StartTime < endOfDay &&
-                         ts.Status == TimeSlotStatus.Available)
-            .OrderBy(ts => ts.StartTime)
-            .ToList();
-
-        return await Task.FromResult(slots);
+        return await _timeSlotRepository.GetAvailableSlotsByProviderAndDateAsync(providerId, date);
     }
 
     public async Task<AvailabilityConfig?> GetProviderAvailabilityAsync(int providerId)
     {
-        var availabilities = _dbContext.ProviderAvailabilities
-            .Where(pa => pa.ProviderId == providerId)
-            .ToList();
+        var availabilities = await _availabilityRepository.GetByProviderIdAsync(providerId);
 
         if (!availabilities.Any())
         {

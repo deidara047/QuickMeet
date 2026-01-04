@@ -55,6 +55,8 @@ builder.Services.AddDbContext<QuickMeetDbContext>(options =>
 
 builder.Services.AddScoped<IQuickMeetDbContext>(sp => sp.GetRequiredService<QuickMeetDbContext>());
 builder.Services.AddScoped<IProviderRepository, ProviderRepository>();
+builder.Services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+builder.Services.AddScoped<ITimeSlotRepository, TimeSlotRepository>();
 builder.Services.AddScoped<IPasswordHashingService, PasswordHashingService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
