@@ -214,6 +214,107 @@ public class AvailabilityControllerE2ETests : IntegrationTestBase
         Assert.Equal(HttpStatusCode.Forbidden, respuesta.StatusCode);
     }
 
+    [Fact]
+    public async Task E2E_BufferNegativo_DevuelveBadRequest()
+    {
+        // SETUP
+        var correo = "buffernegativo@example.com";
+        var proveedorId = await RegisterTestProvider(correo);
+        SetTestUser(proveedorId, correo);
+
+        // Buffer negativo debe ser rechazado
+        var configuracion = CrearConfiguracionValida();
+        configuracion.BufferMinutes = -5;
+        
+        var respuesta = await Client.PostAsJsonAsync("/api/availability/configure", configuracion);
+        
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task E2E_DuracionCero_DevuelveBadRequest()
+    {
+        // SETUP
+        var correo = "duracioncero@example.com";
+        var proveedorId = await RegisterTestProvider(correo);
+        SetTestUser(proveedorId, correo);
+
+        // Duración cero debe ser rechazada
+        var configuracion = CrearConfiguracionValida();
+        configuracion.AppointmentDurationMinutes = 0;
+        
+        var respuesta = await Client.PostAsJsonAsync("/api/availability/configure", configuracion);
+        
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task E2E_JSONMalformado_DevuelveBadRequest()
+    {
+        // SETUP
+        var correo = "jsonmalformado@example.com";
+        var proveedorId = await RegisterTestProvider(correo);
+        SetTestUser(proveedorId, correo);
+
+        // JSON inválido
+        var jsonInvalido = "{ \"Days\": [invalid json }";
+        
+        var respuesta = await Client.PostAsync(
+            "/api/availability/configure",
+            new StringContent(jsonInvalido, System.Text.Encoding.UTF8, "application/json"));
+        
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task E2E_TimeSlots_GeneradosEnFormatoUTCISO8601()
+    {
+        // SETUP
+        var correo = "utctest@example.com";
+        var proveedorId = await RegisterTestProvider(correo);
+        SetTestUser(proveedorId, correo);
+
+        // Configurar disponibilidad
+        var configuracion = CrearConfiguracionValida();
+        var respuesta = await Client.PostAsJsonAsync("/api/availability/configure", configuracion);
+        
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        var respuestaBody = await respuesta.Content.ReadFromJsonAsync<AvailabilityResponseDto>();
+        Assert.NotNull(respuestaBody);
+
+        // Verificar formato ISO 8601 con offset UTC en respuesta
+        if (respuestaBody.GeneratedSlots.Count > 0)
+        {
+            foreach (var slot in respuestaBody.GeneratedSlots)
+            {
+                // Formato: "2026-01-15T09:00:00+00:00" o "2026-01-15T09:00:00Z"
+                Assert.Matches(@"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})", slot.StartTime);
+                Assert.Matches(@"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})", slot.EndTime);
+                
+                // Asegurar que es UTC (termina con Z o +00:00)
+                Assert.True(
+                    slot.StartTime.EndsWith("Z") || slot.StartTime.EndsWith("+00:00"),
+                    $"StartTime debe estar en UTC: {slot.StartTime}");
+                Assert.True(
+                    slot.EndTime.EndsWith("Z") || slot.EndTime.EndsWith("+00:00"),
+                    $"EndTime debe estar en UTC: {slot.EndTime}");
+            }
+        }
+
+        // Verificar en BD: datetimeoffset con offset UTC
+        var slotsEnBd = await GetFromDatabase(async db =>
+            await db.TimeSlots
+                .Where(x => x.ProviderId == proveedorId)
+                .ToListAsync());
+
+        foreach (var slot in slotsEnBd)
+        {
+            // Offset debe ser 00:00 (UTC)
+            Assert.Equal(TimeSpan.Zero, slot.StartTime.Offset);
+            Assert.Equal(TimeSpan.Zero, slot.EndTime.Offset);
+        }
+    }
+
     #endregion
 
     #region Private Helpers

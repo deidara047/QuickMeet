@@ -1,6 +1,11 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using QuickMeet.API.DTOs.Auth;
 using QuickMeet.IntegrationTests.Common;
 using QuickMeet.IntegrationTests.Fixtures;
@@ -281,6 +286,93 @@ public class AuthControllerIntegrationTests : IntegrationTestBase
         // Debería retornar Unauthorized porque la cuenta está suspendida
         // (aunque el password sea correcto)
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    #endregion
+
+    #region JWT Security Tests
+
+    [Fact]
+    public async Task JWT_TokenExpirado_DevuelveUnauthorized()
+    {
+        // Arrange: Generar token expirado
+        var expiredToken = GenerateExpiredToken();
+        Client.DefaultRequestHeaders.Authorization = 
+            new AuthenticationHeaderValue("Bearer", expiredToken);
+
+        // Act: Intentar acceso a endpoint protegido
+        var response = await Client.GetAsync("/api/availability/1");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task JWT_TokenConFirmaInvalida_DevuelveUnauthorized()
+    {
+        // Arrange: Generar token con firma incorrecta
+        var invalidSignatureToken = GenerateTokenWithInvalidSignature();
+        Client.DefaultRequestHeaders.Authorization = 
+            new AuthenticationHeaderValue("Bearer", invalidSignatureToken);
+
+        // Act: Intentar acceso a endpoint protegido
+        var response = await Client.GetAsync("/api/availability/1");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    #endregion
+
+    #region JWT Token Generation Helpers
+
+    private string GenerateExpiredToken()
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var key = Encoding.UTF8.GetBytes("your-super-secret-key-change-this-in-production-minimum-32-characters");
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "123"),
+                new Claim(ClaimTypes.Email, "expired@example.com")
+            }),
+            NotBefore = DateTime.UtcNow.AddHours(-2), // Token comenzó hace 2 horas
+            Expires = DateTime.UtcNow.AddHours(-1), // Token expiró hace 1 hora
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature),
+            Issuer = "QuickMeet",
+            Audience = "QuickMeetClients"
+        };
+
+        var token = handler.CreateToken(tokenDescriptor);
+        return handler.WriteToken(token);
+    }
+
+    private string GenerateTokenWithInvalidSignature()
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var wrongKey = Encoding.UTF8.GetBytes("wrong-secret-key-that-is-at-least-32-chars-long-for-hs256");
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "123"),
+                new Claim(ClaimTypes.Email, "invalid@example.com")
+            }),
+            Expires = DateTime.UtcNow.AddHours(1),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(wrongKey),
+                SecurityAlgorithms.HmacSha256Signature),
+            Issuer = "QuickMeet",
+            Audience = "QuickMeetClients"
+        };
+
+        var token = handler.CreateToken(tokenDescriptor);
+        return handler.WriteToken(token);
     }
 
     #endregion
