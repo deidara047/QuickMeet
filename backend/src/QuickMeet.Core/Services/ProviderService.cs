@@ -1,5 +1,6 @@
 ﻿using QuickMeet.Core.Entities;
 using QuickMeet.Core.Interfaces;
+using QuickMeet.Core.DTOs.Providers;
 using Microsoft.Extensions.Logging;
 
 namespace QuickMeet.Core.Services;

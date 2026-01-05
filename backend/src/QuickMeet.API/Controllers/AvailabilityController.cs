@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using QuickMeet.API.DTOs.Availability;
+using QuickMeet.Core.DTOs.Availability;
 using QuickMeet.Core.Interfaces;
 using System.Security.Claims;
 
@@ -36,29 +36,7 @@ public class AvailabilityController : ControllerBase
 
             _logger.LogInformation("Configurando disponibilidad para profesional {ProviderId}", providerId);
 
-            var config = new AvailabilityConfig
-            {
-                Days = configDto.Days
-                    .Select(d => new DayConfig
-                    {
-                        Day = d.Day,
-                        IsWorking = d.IsWorking,
-                        StartTime = d.StartTime,
-                        EndTime = d.EndTime,
-                        Breaks = d.Breaks
-                            .Select(b => new BreakConfig
-                            {
-                                StartTime = b.StartTime,
-                                EndTime = b.EndTime
-                            })
-                            .ToList()
-                    })
-                    .ToList(),
-                AppointmentDurationMinutes = configDto.AppointmentDurationMinutes,
-                BufferMinutes = configDto.BufferMinutes
-            };
-
-            await _availabilityService.ConfigureAvailabilityAsync(providerId, config);
+            await _availabilityService.ConfigureAvailabilityAsync(providerId, configDto);
 
             var generatedSlots = await _availabilityService.GenerateTimeSlotsAsync(
                 providerId,
@@ -175,29 +153,7 @@ public class AvailabilityController : ControllerBase
 
             _logger.LogInformation("Actualizando disponibilidad para profesional {ProviderId}", providerId);
 
-            var config = new AvailabilityConfig
-            {
-                Days = configDto.Days
-                    .Select(d => new DayConfig
-                    {
-                        Day = d.Day,
-                        IsWorking = d.IsWorking,
-                        StartTime = d.StartTime,
-                        EndTime = d.EndTime,
-                        Breaks = d.Breaks
-                            .Select(b => new BreakConfig
-                            {
-                                StartTime = b.StartTime,
-                                EndTime = b.EndTime
-                            })
-                            .ToList()
-                    })
-                    .ToList(),
-                AppointmentDurationMinutes = configDto.AppointmentDurationMinutes,
-                BufferMinutes = configDto.BufferMinutes
-            };
-
-            await _availabilityService.ConfigureAvailabilityAsync(providerId, config);
+            await _availabilityService.ConfigureAvailabilityAsync(providerId, configDto);
 
             var generatedSlots = await _availabilityService.GenerateTimeSlotsAsync(
                 providerId,

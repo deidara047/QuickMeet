@@ -3,6 +3,7 @@ using Moq;
 using QuickMeet.Core.Services;
 using QuickMeet.Core.Interfaces;
 using QuickMeet.Core.Entities;
+using QuickMeet.Core.DTOs.Availability;
 
 namespace QuickMeet.UnitTests.Services;
 
@@ -49,9 +50,9 @@ public class AvailabilityServiceTests
     [Fact]
     public async Task ConfigureAvailabilityAsync_WithValidSingleDayConfig_CreatesAvailabilitySuccessfully()
     {
-        var config = new AvailabilityConfig
+        var config = new AvailabilityConfigDto
         {
-            Days = new List<DayConfig>
+            Days = new List<DayConfigDto>
             {
                 new()
                 {
@@ -92,9 +93,9 @@ public class AvailabilityServiceTests
     [Fact]
     public async Task ConfigureAvailabilityAsync_WithMultipleDaysConfig_CreatesMultipleAvailabilities()
     {
-        var config = new AvailabilityConfig
+        var config = new AvailabilityConfigDto
         {
-            Days = new List<DayConfig>
+            Days = new List<DayConfigDto>
             {
                 new() { Day = DayOfWeek.Monday, IsWorking = true, StartTime = WorkStartTime, EndTime = WorkEndTime, Breaks = [] },
                 new() { Day = DayOfWeek.Wednesday, IsWorking = true, StartTime = WorkStartTime, EndTime = WorkEndTime, Breaks = [] },
@@ -126,9 +127,9 @@ public class AvailabilityServiceTests
     [Fact]
     public async Task ConfigureAvailabilityAsync_WithBreak_CreatesAvailabilityWithBreak()
     {
-        var config = new AvailabilityConfig
+        var config = new AvailabilityConfigDto
         {
-            Days = new List<DayConfig>
+            Days = new List<DayConfigDto>
             {
                 new()
                 {
@@ -136,7 +137,7 @@ public class AvailabilityServiceTests
                     IsWorking = true,
                     StartTime = WorkStartTime,
                     EndTime = WorkEndTime,
-                    Breaks = new List<BreakConfig>
+                    Breaks = new List<BreakDto>
                     {
                         new() { StartTime = BreakStartTime, EndTime = BreakEndTime }
                     }
@@ -175,9 +176,9 @@ public class AvailabilityServiceTests
     [Fact]
     public async Task ConfigureAvailabilityAsync_WithNoDaysConfigured_ThrowsInvalidOperationException()
     {
-        var config = new AvailabilityConfig
+        var config = new AvailabilityConfigDto
         {
-            Days = new List<DayConfig>
+            Days = new List<DayConfigDto>
             {
                 new() { Day = DayOfWeek.Monday, IsWorking = false, StartTime = null, EndTime = null, Breaks = [] },
                 new() { Day = DayOfWeek.Tuesday, IsWorking = false, StartTime = null, EndTime = null, Breaks = [] }
@@ -196,9 +197,9 @@ public class AvailabilityServiceTests
     [Fact]
     public async Task ConfigureAvailabilityAsync_WithNonExistentProvider_ThrowsInvalidOperationException()
     {
-        var config = new AvailabilityConfig
+        var config = new AvailabilityConfigDto
         {
-            Days = new List<DayConfig>
+            Days = new List<DayConfigDto>
             {
                 new() { Day = DayOfWeek.Monday, IsWorking = true, StartTime = WorkStartTime, EndTime = WorkEndTime, Breaks = [] }
             },
@@ -220,9 +221,9 @@ public class AvailabilityServiceTests
     [InlineData("18:00", null)]
     public async Task ConfigureAvailabilityAsync_WithMissingTime_ThrowsInvalidOperationException(string? startStr, string? endStr)
     {
-        var config = new AvailabilityConfig
+        var config = new AvailabilityConfigDto
         {
-            Days = new List<DayConfig>
+            Days = new List<DayConfigDto>
             {
                 new()
                 {
@@ -250,9 +251,9 @@ public class AvailabilityServiceTests
     [Fact]
     public async Task ConfigureAvailabilityAsync_WithInvalidTimeRange_ThrowsInvalidOperationException()
     {
-        var config = new AvailabilityConfig
+        var config = new AvailabilityConfigDto
         {
-            Days = new List<DayConfig>
+            Days = new List<DayConfigDto>
             {
                 new()
                 {
@@ -280,9 +281,9 @@ public class AvailabilityServiceTests
     [Fact]
     public async Task ConfigureAvailabilityAsync_WithBreakOutsideWorkingHours_ThrowsInvalidOperationException()
     {
-        var config = new AvailabilityConfig
+        var config = new AvailabilityConfigDto
         {
-            Days = new List<DayConfig>
+            Days = new List<DayConfigDto>
             {
                 new()
                 {
@@ -290,7 +291,7 @@ public class AvailabilityServiceTests
                     IsWorking = true,
                     StartTime = WorkStartTime,
                     EndTime = WorkEndTime,
-                    Breaks = new List<BreakConfig>
+                    Breaks = new List<BreakDto>
                     {
                         new() { StartTime = new TimeSpan(8, 0, 0), EndTime = new TimeSpan(8, 30, 0) }
                     }

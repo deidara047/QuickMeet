@@ -1,5 +1,5 @@
 using FluentValidation;
-using QuickMeet.API.DTOs.Auth;
+using QuickMeet.Core.DTOs.Auth;
 
 namespace QuickMeet.API.Validators;
 

@@ -1,4 +1,4 @@
-namespace QuickMeet.API.DTOs.Auth;
+namespace QuickMeet.Core.DTOs.Auth;
 
 public record RegisterRequest(
     string Email,
@@ -32,6 +32,20 @@ public record AuthResponse(
 );
 
 public record TokenResponse(
+    string AccessToken,
+    string RefreshToken,
+    DateTimeOffset ExpiresAt
+);
+
+/// <summary>
+/// DTO que representa el resultado de una autenticación exitosa.
+/// Utilizado internamente por IAuthenticationService para retornar información de autenticación.
+/// </summary>
+public record AuthenticationResultDto(
+    int ProviderId,
+    string Email,
+    string Username,
+    string FullName,
     string AccessToken,
     string RefreshToken,
     DateTimeOffset ExpiresAt

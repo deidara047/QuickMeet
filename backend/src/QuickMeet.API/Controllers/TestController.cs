@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuickMeet.Core.Interfaces;
 using QuickMeet.Infrastructure.Data;
-using QuickMeet.API.DTOs.Auth;
+using QuickMeet.Core.DTOs.Auth;
 using QuickMeet.API.Filters;
 
 namespace QuickMeet.API.Controllers

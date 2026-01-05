@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using QuickMeet.API.DTOs.Auth;
+using QuickMeet.Core.DTOs.Auth;
 using QuickMeet.IntegrationTests.Common;
 using QuickMeet.IntegrationTests.Fixtures;
 using Xunit;

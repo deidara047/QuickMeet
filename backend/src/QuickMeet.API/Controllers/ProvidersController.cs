@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuickMeet.Core.Interfaces;
+using QuickMeet.Core.DTOs.Providers;
 using System.Security.Claims;
 
 namespace QuickMeet.API.Controllers;

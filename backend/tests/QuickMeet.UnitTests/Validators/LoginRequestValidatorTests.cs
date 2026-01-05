@@ -1,6 +1,6 @@
 using Xunit;
 using FluentValidation;
-using QuickMeet.API.DTOs.Auth;
+using QuickMeet.Core.DTOs.Auth;
 using QuickMeet.API.Validators;
 
 namespace QuickMeet.UnitTests.Validators;

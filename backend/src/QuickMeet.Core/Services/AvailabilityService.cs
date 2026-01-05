@@ -1,5 +1,6 @@
 using QuickMeet.Core.Entities;
 using QuickMeet.Core.Interfaces;
+using QuickMeet.Core.DTOs.Availability;
 
 namespace QuickMeet.Core.Services;
 
@@ -19,7 +20,7 @@ public class AvailabilityService : IAvailabilityService
         _timeSlotRepository = timeSlotRepository;
     }
 
-    public async Task ConfigureAvailabilityAsync(int providerId, AvailabilityConfig config)
+    public async Task ConfigureAvailabilityAsync(int providerId, AvailabilityConfigDto config)
     {
         if (config.Days == null || !config.Days.Any(d => d.IsWorking))
         {
@@ -136,7 +137,7 @@ public class AvailabilityService : IAvailabilityService
         return await _timeSlotRepository.GetAvailableSlotsByProviderAndDateAsync(providerId, date);
     }
 
-    public async Task<AvailabilityConfig?> GetProviderAvailabilityAsync(int providerId)
+    public async Task<AvailabilityConfigDto?> GetProviderAvailabilityAsync(int providerId)
     {
         var availabilities = await _availabilityRepository.GetByProviderIdAsync(providerId);
 
@@ -145,7 +146,7 @@ public class AvailabilityService : IAvailabilityService
             return null;
         }
 
-        var config = new AvailabilityConfig
+        var config = new AvailabilityConfigDto
         {
             AppointmentDurationMinutes = availabilities.First().AppointmentDurationMinutes,
             BufferMinutes = availabilities.First().BufferMinutes,
@@ -157,14 +158,14 @@ public class AvailabilityService : IAvailabilityService
             var dayOfWeek = (DayOfWeek)i;
             var availability = availabilities.FirstOrDefault(a => a.DayOfWeek == dayOfWeek);
 
-            var dayConfig = new DayConfig
+            var dayConfig = new DayConfigDto
             {
                 Day = dayOfWeek,
                 IsWorking = availability != null,
                 StartTime = availability?.StartTime,
                 EndTime = availability?.EndTime,
                 Breaks = availability?.Breaks
-                    .Select(b => new BreakConfig { StartTime = b.StartTime, EndTime = b.EndTime })
+                    .Select(b => new BreakDto { StartTime = b.StartTime, EndTime = b.EndTime })
                     .ToList() ?? []
             };
 

@@ -1,4 +1,4 @@
-namespace QuickMeet.API.DTOs.Providers;
+namespace QuickMeet.Core.DTOs.Providers;
 
 public record UpdateProviderDto(
     string? FullName,

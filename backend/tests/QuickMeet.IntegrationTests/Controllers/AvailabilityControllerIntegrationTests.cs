@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
-using QuickMeet.API.DTOs.Availability;
+using QuickMeet.Core.DTOs.Availability;
 using QuickMeet.Core.Entities;
 using QuickMeet.IntegrationTests.Common;
 using QuickMeet.IntegrationTests.Fixtures;

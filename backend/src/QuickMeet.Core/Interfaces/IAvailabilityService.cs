@@ -1,43 +1,31 @@
 using QuickMeet.Core.Entities;
+using QuickMeet.Core.DTOs.Availability;
 
 namespace QuickMeet.Core.Interfaces;
 
+/// <summary>
+/// Servicio de disponibilidad responsable de configurar y gestionar slots de tiempo disponibles.
+/// Maneja la lógica de negocio de disponibilidad sin detalles de infraestructura.
+/// </summary>
 public interface IAvailabilityService
 {
-    Task ConfigureAvailabilityAsync(int providerId, AvailabilityConfig config);
+    /// <summary>
+    /// Configura la disponibilidad de un proveedor basada en su horario laboral y descansos.
+    /// </summary>
+    Task ConfigureAvailabilityAsync(int providerId, AvailabilityConfigDto config);
     
+    /// <summary>
+    /// Genera slots de tiempo disponibles para un rango de fechas específico.
+    /// </summary>
     Task<IEnumerable<TimeSlot>> GenerateTimeSlotsAsync(int providerId, DateTimeOffset startDate, DateTimeOffset endDate);
     
+    /// <summary>
+    /// Obtiene los slots disponibles para una fecha específica.
+    /// </summary>
     Task<IEnumerable<TimeSlot>> GetAvailableSlotsForDateAsync(int providerId, DateTimeOffset date);
     
-    Task<AvailabilityConfig?> GetProviderAvailabilityAsync(int providerId);
-}
-
-public class AvailabilityConfig
-{
-    public List<DayConfig> Days { get; set; } = [];
-    
-    public int AppointmentDurationMinutes { get; set; } = 30;
-    
-    public int BufferMinutes { get; set; } = 0;
-}
-
-public class DayConfig
-{
-    public DayOfWeek Day { get; set; }
-    
-    public bool IsWorking { get; set; }
-    
-    public TimeSpan? StartTime { get; set; }
-    
-    public TimeSpan? EndTime { get; set; }
-    
-    public List<BreakConfig> Breaks { get; set; } = [];
-}
-
-public class BreakConfig
-{
-    public TimeSpan StartTime { get; set; }
-    
-    public TimeSpan EndTime { get; set; }
+    /// <summary>
+    /// Obtiene la configuración de disponibilidad actual de un proveedor.
+    /// </summary>
+    Task<AvailabilityConfigDto?> GetProviderAvailabilityAsync(int providerId);
 }

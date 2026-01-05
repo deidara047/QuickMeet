@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using QuickMeet.API.DTOs.Auth;
+using QuickMeet.Core.DTOs.Auth;
 using QuickMeet.Core.Interfaces;
 
 namespace QuickMeet.API.Controllers;

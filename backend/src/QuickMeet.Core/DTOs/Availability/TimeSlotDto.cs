@@ -1,4 +1,4 @@
-namespace QuickMeet.API.DTOs.Availability;
+namespace QuickMeet.Core.DTOs.Availability;
 
 public class TimeSlotDto
 {

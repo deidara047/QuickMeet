@@ -1,5 +1,6 @@
 using QuickMeet.Core.Entities;
 using QuickMeet.Core.Interfaces;
+using QuickMeet.Core.DTOs.Auth;
 
 namespace QuickMeet.Core.Services;
 
@@ -19,7 +20,7 @@ public class AuthenticationService : IAuthenticationService
         _tokenService = tokenService;
     }
 
-    public async Task<(bool Success, string Message, AuthenticationResult? Result)> RegisterAsync(
+    public async Task<(bool Success, string Message, AuthenticationResultDto? Result)> RegisterAsync(
         string email,
         string username,
         string fullName,
@@ -60,7 +61,7 @@ public class AuthenticationService : IAuthenticationService
         var accessToken = _tokenService.GenerateAccessToken(provider.Id, provider.Email);
         var refreshToken = _tokenService.GenerateRefreshToken();
 
-        var result = new AuthenticationResult(
+        var result = new AuthenticationResultDto(
             ProviderId: provider.Id,
             Email: provider.Email,
             Username: provider.Username,
@@ -73,7 +74,7 @@ public class AuthenticationService : IAuthenticationService
         return (true, "Registro exitoso. Por favor, verifica tu email.", result);
     }
 
-    public async Task<(bool Success, string Message, AuthenticationResult? Result)> LoginAsync(
+    public async Task<(bool Success, string Message, AuthenticationResultDto? Result)> LoginAsync(
         string email,
         string password)
     {
@@ -98,7 +99,7 @@ public class AuthenticationService : IAuthenticationService
         var accessToken = _tokenService.GenerateAccessToken(provider.Id, provider.Email);
         var refreshToken = _tokenService.GenerateRefreshToken();
 
-        var result = new AuthenticationResult(
+        var result = new AuthenticationResultDto(
             ProviderId: provider.Id,
             Email: provider.Email,
             Username: provider.Username,

@@ -1,5 +1,9 @@
-namespace QuickMeet.API.DTOs.Availability;
+namespace QuickMeet.Core.DTOs.Availability;
 
+/// <summary>
+/// DTO que representa la configuración de un día laboral.
+/// Utilizado por IAvailabilityService como parte de AvailabilityConfigDto.
+/// </summary>
 public class DayConfigDto
 {
     public DayOfWeek Day { get; set; }

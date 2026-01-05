@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
-using QuickMeet.API.DTOs.Auth;
+using QuickMeet.Core.DTOs.Auth;
 using QuickMeet.IntegrationTests.Common;
 using QuickMeet.IntegrationTests.Fixtures;
 using Xunit;
