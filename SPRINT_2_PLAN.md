@@ -36,8 +36,8 @@ Todas las fases backend (entidades, migraciones, servicios, controllers, unit te
 **Problema identificado:** Fase 7 creó ProvidersController + ProviderService sin tests asociados.
 
 **Acción correctiva (ANTES de Fase 8):**
-- [ ] Unit Tests: ProviderService (métodos de negocio)
-- [ ] Integration Tests: ProvidersController (3 endpoints)
+- [X] Unit Tests: ProviderService (métodos de negocio)
+- [X] Integration Tests: ProvidersController (3 endpoints)
 - [ ] E2E Tests: Flujos completos vía HTTP
 - [ ] Actualizar E2E Backend tests existentes para incluir provider endpoints
 
