@@ -115,6 +115,30 @@ export class ProfileEditorComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
+
+      // Validación de tamaño (5MB)
+      const maxSizeInBytes = 5 * 1024 * 1024;
+      if (file.size > maxSizeInBytes) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'La foto no puede exceder 5MB',
+          life: 3000
+        });
+        return;
+      }
+
+      // Validación de extensión
+      const allowedExtensions = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedExtensions.includes(file.type)) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Solo se permiten JPEG, PNG o WebP',
+          life: 3000
+        });
+        return;
+      }
       
       const reader = new FileReader();
       reader.onload = (e) => {

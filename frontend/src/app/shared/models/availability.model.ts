@@ -48,7 +48,7 @@ export interface AvailabilityResponse {
   updatedAt: string;
 }
 
-export interface AvailabilityResponse {
+export interface AvailabilityConfigureResponse {
   success: boolean;
   message: string;
   generatedSlots: TimeSlot[];
