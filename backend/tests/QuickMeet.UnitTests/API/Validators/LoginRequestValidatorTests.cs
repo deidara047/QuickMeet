@@ -3,7 +3,7 @@ using FluentValidation;
 using QuickMeet.Core.DTOs.Auth;
 using QuickMeet.API.Validators;
 
-namespace QuickMeet.UnitTests.Validators;
+namespace QuickMeet.UnitTests.API.Validators;
 
 public class LoginRequestValidatorTests
 {
