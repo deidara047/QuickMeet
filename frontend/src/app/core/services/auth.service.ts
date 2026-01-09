@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { ApiService } from './api.service';
+import { StorageService } from './storage.service';
 
 export interface RegisterPayload {
   email: string;
@@ -41,6 +42,7 @@ export interface AuthUser {
 })
 export class AuthService {
   private api = inject(ApiService);
+  private storage = inject(StorageService);
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'auth_user';
@@ -68,19 +70,19 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
+    this.storage.removeItem(this.TOKEN_KEY);
+    this.storage.removeItem(this.REFRESH_TOKEN_KEY);
+    this.storage.removeItem(this.USER_KEY);
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
   }
 
   getAccessToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return this.storage.getItem(this.TOKEN_KEY);
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    return this.storage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   getCurrentUser(): AuthUser | null {
@@ -96,8 +98,8 @@ export class AuthService {
   }
 
   private handleAuthResponse(response: AuthResponse): void {
-    localStorage.setItem(this.TOKEN_KEY, response.accessToken);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+    this.storage.setItem(this.TOKEN_KEY, response.accessToken);
+    this.storage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
 
     const user: AuthUser = {
       providerId: response.providerId,
@@ -106,13 +108,22 @@ export class AuthService {
       fullName: response.fullName
     };
 
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    this.storage.setItem(this.USER_KEY, JSON.stringify(user));
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
   }
 
   private getUserFromStorage(): AuthUser | null {
-    const userStr = localStorage.getItem(this.USER_KEY);
-    return userStr ? JSON.parse(userStr) : null;
+    const userStr = this.storage.getItem(this.USER_KEY);
+    if (!userStr) return null;
+
+    try {
+      return JSON.parse(userStr);
+    } catch (error) {
+      console.error('Failed to parse stored user data', error);
+      // Remove corrupted data from storage
+      this.storage.removeItem(this.USER_KEY);
+      return null;
+    }
   }
 }
