@@ -6,46 +6,29 @@
 
 ---
 
-## 🎯 ESTADO ACTUAL (4 Enero 2026)
+## 🎯 ESTADO ACTUAL (9 Enero 2026)
 
-### ✅ BACKEND: COMPLETADO (Fases 1-6)
+### ✅ BACKEND: COMPLETADO (Fases 1-6 + E2E)
 - **Fase 1-3:** Entidades, servicios, controllers
-- **Fase 4-5:** Unit tests + Integration tests (41 tests pasando)
-- **Fase 6:** E2E Backend (Broche de Oro) - COMPLETADO 3 Enero
+- **Fase 4-5:** Unit tests (258 unitarios + integration tests)
+- **Fase 6:** E2E Backend (14 E2E tests ProvidersController)
+- **Total:** 275 tests pasando ✅
 
-**Resultado:** Backend 100% operacional, DB con tablas, servicios listos
+**Resultado:** Backend 100% operacional, DB con tablas, servicios listos + E2E coverage
 
-### ⏳ FRONTEND: PENDIENTE (Fases 7-13)
-- **Fases 7-8:** Setup & Models
-- **Fases 9-11:** Componentes
-- **Fases 12-13:** Testing (Unit + E2E)
+### ⏳ FRONTEND: EN PROGRESO
+- **Fases 7-8:** ✅ COMPLETADO (ProfileService + Models existentes)
+- **Fases 9-11:** ✅ COMPLETADO (Dashboard, ProfileEditor, AvailabilityConfigurator básicos)
+- **Fase 12:** ⏳ TODO (Component & Service Tests - 98 tests planeados)
+- **Fase 13:** ⏳ TODO (E2E Playwright)
 
-**Próximo Paso:** Comenzar Fase 7 (ProfileService)
+**Próximo Paso:** Comenzar Fase 12 - Component Tests (AuthService.spec.ts BLOQUEADOR)
 
 ---
 
 ## � BACKEND: FASES 1-6 (REFERENCIA - COMPLETADO)
 
 Todas las fases backend (entidades, migraciones, servicios, controllers, unit tests, integration tests, E2E) completadas el 3 Enero 2026.
-
-
----
-
-## 🚨 PARADA DE EMERGENCIA: Backend Testing (ProvidersController + ProviderService)
-
-**Problema identificado:** Fase 7 creó ProvidersController + ProviderService sin tests asociados.
-
-**Acción correctiva (ANTES de Fase 8):**
-- [X] Unit Tests: ProviderService (métodos de negocio)
-- [X] Integration Tests: ProvidersController (3 endpoints)
-- [ ] E2E Tests: Flujos completos vía HTTP
-- [ ] Actualizar E2E Backend tests existentes para incluir provider endpoints
-
-**Estimación:** 2 horas (1h unit + 0.5h integration + 0.5h E2E)
-
-**Regla aplicada:** "Nunca se va a dar un sprint como terminado si no hay tests que lo avalen"
-
----
 
 ## 🎨 FRONTEND: FASES 7-13 (TRABAJO ACTUAL)
 
@@ -285,83 +268,393 @@ availability-configurator/
 
 ---
 
-### FASE 12: Component Tests (Vitest) [1h 30min] ⏳
+### FASE 12: Component & Service Tests (Vitest) [2h 30min] ⏳
 
-**Configuración inicial Vitest:**
-- [ ] Crear `vitest.config.ts` en raíz del proyecto
-- [ ] Crear `src/test.ts` con setup de TestBed
-- [ ] Actualizar `package.json` scripts (ya está hecho: test, test:run, test:coverage)
+**Status:** ✅ Vitest ya configurado + DisplaySlotPipe.spec.ts completado
+
+**Configuración inicial Vitest (YA HECHO):**
+- [x] `vitest.config.ts` en raíz del proyecto
+- [x] `src/test.ts` con setup de TestBed
+- [x] `package.json` scripts (test, test:run, test:coverage)
+- [x] DisplaySlotPipe.spec.ts (263 líneas, 100% coverage)
 
 **Estrategia de Testing:**
-- ✅ DisplaySlotPipe: Pipe pura, SIN TestBed (instantiation directa)
-- ProfileEditorComponent: Con TestBed, mocking ProfileService
-- AvailabilityConfiguratorComponent: Con TestBed, mocking AvailabilityService
+1. **Pipes:** SIN TestBed, instanciación directa (DisplaySlotPipe ya hecho ✅)
+2. **Servicios:** Con `HttpTestingController`, SIN TestBed para lógica pura
+3. **Componentes:** Con TestBed completo + mocking de dependencias
+4. **Validadores:** SIN TestBed, instanciación directa
+
+**Orden de implementación (CRÍTICO - respeta dependencias):**
 
 ---
 
-#### ProfileEditorComponent Tests [15 tests]
+## 📋 CHECKLIST TESTS - SERVICIOS [~40 tests, 45 min]
 
-**Tareas:**
-- [ ] Test 1: debería renderizar formulario con todos los campos
-- [ ] Test 2: debería requerir campo fullName
-- [ ] Test 3: debería validar minLength(3) en fullName
-- [ ] Test 4: debería validar maxLength(100) en fullName
-- [ ] Test 5: debería aceptar description opcional (max 500 chars)
-- [ ] Test 6: debería validar teléfono con patrón regex
-- [ ] Test 7: debería deshabilitar botón si form inválido
-- [ ] Test 8: debería habilitar botón si form válido
-- [ ] Test 9: debería mostrar preview de imagen en file upload
-- [ ] Test 10: debería validar max 5MB en file upload
-- [ ] Test 11: debería llamar profileService.updateProfile() on submit
-- [ ] Test 12: debería mostrar loading spinner durante submit
-- [ ] Test 13: debería mostrar toast success en actualización exitosa
-- [ ] Test 14: debería mostrar toast error en fallo de API
-- [ ] Test 15: debería preservar form data si hay error (para retry)
+### 1️⃣ AuthService Tests (BLOQUEADOR - otros tests dependen)
+**Archivo:** `src/app/core/services/auth.service.spec.ts`
 
-**Coverage Goal:** 80%+
+**Setup:**
+- [ ] Importar HttpClientTestingModule, HttpTestingController
+- [ ] Mock LocalStorage/SessionStorage
+- [ ] Crear fixture con usuarios de prueba
+
+**Test Suite - Login [5 tests]:**
+- [ ] 1.1: debería hacer POST a `/api/auth/login` con credentials
+- [ ] 1.2: debería guardar token en localStorage al login exitoso
+- [ ] 1.3: debería retornar error 401 si credenciales inválidas
+- [ ] 1.4: debería limpiar localStorage si login falla
+- [ ] 1.5: debería actualizar currentUser$ observable
+
+**Test Suite - Register [5 tests]:**
+- [ ] 2.1: debería hacer POST a `/api/auth/register` con datos
+- [ ] 2.2: debería validar formato email antes de enviar
+- [ ] 2.3: debería retornar error si email duplicado (409)
+- [ ] 2.4: debería retornar error si username duplicado
+- [ ] 2.5: debería retornar success con provider ID
+
+**Test Suite - Token Management [4 tests]:**
+- [ ] 3.1: debería obtener token desde localStorage
+- [ ] 3.2: debería verificar si token válido (no expirado)
+- [ ] 3.3: debería limpiar token al logout
+- [ ] 3.4: debería retornar null si token no existe
+
+**Test Suite - User State [3 tests]:**
+- [ ] 4.1: debería obtener userId actual
+- [ ] 4.2: debería obtener user actual desde localStorage
+- [ ] 4.3: debería verificar si usuario autenticado
+
+**Coverage Goal:** 90%
 
 ---
 
-#### AvailabilityConfiguratorComponent Tests [25 tests]
+### 2️⃣ ProfileService Tests
+**Archivo:** `src/app/core/services/profile.service.spec.ts`
 
-**Tareas:**
+**Setup:**
+- [ ] Mock HttpTestingController
+- [ ] Mock file uploads
 
-**Sección 1: Day Toggles & Time Inputs (8 tests)**
-- [ ] Test 1: debería renderizar 7 toggles (Lun-Dom)
-- [ ] Test 2: debería deshabilitar time inputs cuando toggle OFF
-- [ ] Test 3: debería habilitar time inputs cuando toggle ON
-- [ ] Test 4: debería validar que startTime < endTime
-- [ ] Test 5: debería mostrar error si startTime > endTime
-- [ ] Test 6: debería requerir al menos 1 día activo
-- [ ] Test 7: debería desabilitar submit si no hay días
-- [ ] Test 8: debería permitir submit con múltiples días configurados
+**Test Suite - Get Profile [3 tests]:**
+- [ ] 1.1: debería hacer GET a `/api/providers/{id}`
+- [ ] 1.2: debería mapear respuesta a ProviderProfile
+- [ ] 1.3: debería retornar 404 si provider no existe
 
-**Sección 2: Breaks (6 tests)**
-- [ ] Test 9: debería agregar nuevo break al click "+ Agregar"
-- [ ] Test 10: debería eliminar break al click "Eliminar"
-- [ ] Test 11: debería validar break dentro de horario working
-- [ ] Test 12: debería mostrar error si break fuera de horario
-- [ ] Test 13: debería validar sin traslape entre breaks
-- [ ] Test 14: debería permitir múltiples breaks
+**Test Suite - Update Profile [5 tests]:**
+- [ ] 2.1: debería hacer PUT a `/api/providers/{id}` con datos
+- [ ] 2.2: debería actualizar solo campos no-null
+- [ ] 2.3: debería retornar perfil actualizado
+- [ ] 2.4: debería retornar 400 si validación falla (fullName inválido)
+- [ ] 2.5: debería retornar 403 si no es propietario
 
-**Sección 3: Duration & Buffer (3 tests)**
-- [ ] Test 15: debería tener select duration con opciones [15,30,45,60]
-- [ ] Test 16: debería tener select buffer con opciones [0,5,10,15]
-- [ ] Test 17: debería usar valores default (30min, 0min)
+**Test Suite - Upload Photo [4 tests]:**
+- [ ] 3.1: debería hacer POST a `/api/providers/{id}/photo`
+- [ ] 3.2: debería enviar FormData con archivo
+- [ ] 3.3: debería retornar photoUrl en respuesta
+- [ ] 3.4: debería retornar 400 si extensión inválida
 
-**Sección 4: Preview Generation (5 tests)**
-- [ ] Test 18: debería generar preview on form valueChanges
-- [ ] Test 19: debería usar DisplaySlotPipe para formatear slots
-- [ ] Test 20: debería mostrar slots para próximos 3 días
-- [ ] Test 21: debería ocultar slots durante breaks
-- [ ] Test 22: debería actualizar preview cuando form cambia
+**Coverage Goal:** 85%
 
-**Submit & Loading (3 tests)**
-- [ ] Test 23: debería llamar availabilityService.configure() on submit
-- [ ] Test 24: debería deshabilitar form durante submit
-- [ ] Test 25: debería mostrar toast success/error según resultado
+---
 
-**Coverage Goal:** 85%+
+### 3️⃣ AvailabilityService Tests
+**Archivo:** `src/app/core/services/availability.service.spec.ts`
+
+**Setup:**
+- [ ] Mock HttpTestingController
+- [ ] Fixture con configuraciones de disponibilidad
+
+**Test Suite - Configure [4 tests]:**
+- [ ] 1.1: debería hacer POST a `/api/availability/configure`
+- [ ] 1.2: debería validar al menos 1 día de trabajo
+- [ ] 1.3: debería retornar slots generados
+- [ ] 1.4: debería retornar 400 si rango horarios inválido
+
+**Test Suite - Get Config [3 tests]:**
+- [ ] 2.1: debería hacer GET a `/api/availability/{id}`
+- [ ] 2.2: debería mapear respuesta a AvailabilityConfig
+- [ ] 2.3: debería cachear resultado
+
+**Test Suite - Preview Generation [3 tests]:**
+- [ ] 3.1: debería generar preview de slots próximos 3 días
+- [ ] 3.2: debería respetar breaks en generación
+- [ ] 3.3: debería aplicar appointmentDuration y buffer
+
+**Coverage Goal:** 85%
+
+---
+
+### 4️⃣ ApiService Tests
+**Archivo:** `src/app/core/services/api.service.spec.ts`
+
+**Setup:**
+- [ ] Mock HttpClient
+- [ ] Mock interceptors
+
+**Test Suite - HTTP Helpers [4 tests]:**
+- [ ] 1.1: debería construir URL correctamente
+- [ ] 1.2: debería agregar headers de autorización
+- [ ] 1.3: debería manejar errores HTTP (4xx, 5xx)
+- [ ] 1.4: debería serializar parámetros
+
+**Coverage Goal:** 80%
+
+---
+
+## 🎨 CHECKLIST TESTS - COMPONENTES [~60 tests, 1h 15min]
+
+### 5️⃣ DashboardComponent Tests
+**Archivo:** `src/app/features/dashboard/dashboard.component.spec.ts`
+
+**Setup:**
+- [ ] Mock AuthService
+- [ ] Mock ProfileService
+- [ ] Mock AvailabilityService
+- [ ] Mock MessageService (PrimeNG)
+- [ ] Mock Router
+
+**Test Suite - Initialization [3 tests]:**
+- [ ] 1.1: debería cargar perfil en ngOnInit
+- [ ] 1.2: debería mostrar error si usuario no autenticado
+- [ ] 1.3: debería generar enlace público
+
+**Test Suite - Profile Loading [4 tests]:**
+- [ ] 2.1: debería llamar profileService.getProfile()
+- [ ] 2.2: debería mostrar loading spinner
+- [ ] 2.3: debería mostrar perfil en template
+- [ ] 2.4: debería mostrar toast error si falla
+
+**Test Suite - Public Link [2 tests]:**
+- [ ] 3.1: debería mostrar `quickmeet.app/username`
+- [ ] 3.2: debería tener botón copy-to-clipboard
+
+**Coverage Goal:** 80%
+
+---
+
+### 6️⃣ ProfileEditorComponent Tests
+**Archivo:** `src/app/features/dashboard/profile-editor/profile-editor.component.spec.ts`
+
+**Setup:**
+- [ ] Mock ProfileService
+- [ ] Mock MessageService (PrimeNG)
+- [ ] TestBed con standalone component
+
+**Test Suite - Form Rendering [4 tests]:**
+- [ ] 1.1: debería renderizar input fullName
+- [ ] 1.2: debería renderizar textarea description
+- [ ] 1.3: debería renderizar input phone
+- [ ] 1.4: debería renderizar select appointmentDurationMinutes
+
+**Test Suite - FullName Validation [4 tests]:**
+- [ ] 2.1: debería requerir fullName
+- [ ] 2.2: debería validar minLength(3)
+- [ ] 2.3: debería validar maxLength(100)
+- [ ] 2.4: debería mostrar error message en template
+
+**Test Suite - Description Validation [2 tests]:**
+- [ ] 3.1: debería aceptar description opcional
+- [ ] 3.2: debería validar maxLength(500)
+
+**Test Suite - Phone Validation [2 tests]:**
+- [ ] 4.1: debería validar patrón regex `/^\+?[0-9\s\-]{9,}$/`
+- [ ] 4.2: debería ser opcional
+
+**Test Suite - Duration Validation [2 tests]:**
+- [ ] 5.1: debería aceptar solo [15, 30, 45, 60] minutos
+- [ ] 5.2: debería mostrar opciones en select
+
+**Test Suite - File Upload [4 tests]:**
+- [ ] 6.1: debería mostrar preview de imagen
+- [ ] 6.2: debería validar max 5MB
+- [ ] 6.3: debería validar extensiones jpg, png, gif, webp
+- [ ] 6.4: debería rechazar archivo vacío
+
+**Test Suite - Submit [5 tests]:**
+- [ ] 7.1: debería deshabilitar botón si form inválido
+- [ ] 7.2: debería llamar profileService.updateProfile() on click
+- [ ] 7.3: debería mostrar loading spinner durante submit
+- [ ] 7.4: debería mostrar toast success
+- [ ] 7.5: debería mostrar toast error si API falla
+
+**Test Suite - Form State [2 tests]:**
+- [ ] 8.1: debería preservar form data si falla submit
+- [ ] 8.2: debería permitir retry después de error
+
+**Coverage Goal:** 85%
+
+---
+
+### 7️⃣ AvailabilityConfiguratorComponent Tests
+**Archivo:** `src/app/features/dashboard/availability-configurator/availability-configurator.component.spec.ts`
+
+**Setup:**
+- [ ] Mock AvailabilityService
+- [ ] Mock MessageService (PrimeNG)
+- [ ] TestBed con standalone component
+- [ ] Fixture con FormArray
+
+**Test Suite - Day Configuration [6 tests]:**
+- [ ] 1.1: debería renderizar 7 toggles (Lun-Dom)
+- [ ] 1.2: debería deshabilitar time inputs cuando toggle OFF
+- [ ] 1.3: debería habilitar time inputs cuando toggle ON
+- [ ] 1.4: debería validar startTime < endTime
+- [ ] 1.5: debería mostrar error si startTime > endTime
+- [ ] 1.6: debería marcar como invalid si ambos iguales
+
+**Test Suite - Breaks Configuration [5 tests]:**
+- [ ] 2.1: debería agregar break al click "+ Agregar"
+- [ ] 2.2: debería eliminar break al click "Eliminar"
+- [ ] 2.3: debería validar break dentro de horario working
+- [ ] 2.4: debería mostrar error si break fuera de horario
+- [ ] 2.5: debería validar sin traslape entre breaks
+
+**Test Suite - Duration & Buffer [3 tests]:**
+- [ ] 3.1: debería mostrar opciones [15, 30, 45, 60] minutos
+- [ ] 3.2: debería mostrar opciones [0, 5, 10, 15] minutos buffer
+- [ ] 3.3: debería usar default 30min duration, 0min buffer
+
+**Test Suite - Preview Generation [4 tests]:**
+- [ ] 4.1: debería generar preview on form valueChanges
+- [ ] 4.2: debería usar DisplaySlotPipe para formatear
+- [ ] 4.3: debería mostrar slots próximos 3 días
+- [ ] 4.4: debería ocultar slots durante breaks
+
+**Test Suite - Validation [3 tests]:**
+- [ ] 5.1: debería requerir al menos 1 día activo
+- [ ] 5.2: debería mostrar error global si sin días
+- [ ] 5.3: debería deshabilitar botón submit
+
+**Test Suite - Submit [4 tests]:**
+- [ ] 6.1: debería llamar availabilityService.configure() on click
+- [ ] 6.2: debería deshabilitar form durante submit
+- [ ] 6.3: debería mostrar loading spinner
+- [ ] 6.4: debería mostrar toast success/error
+
+**Coverage Goal:** 85%
+
+---
+
+## ✅ CHECKLIST TESTS - VALIDADORES [~15 tests, 20 min]
+
+### 8️⃣ TimeRangeValidator Tests
+**Archivo:** `src/app/shared/validators/time-range.validator.spec.ts`
+
+**Setup:**
+- [ ] Instanciación directa (sin TestBed)
+- [ ] Fixture con controls para testing
+
+**Test Suite [4 tests]:**
+- [ ] 1.1: debería retornar null si startTime < endTime
+- [ ] 1.2: debería retornar error si startTime > endTime
+- [ ] 1.3: debería retornar error si startTime === endTime
+- [ ] 1.4: debería manejar valores nulos
+
+**Coverage Goal:** 90%
+
+---
+
+### 9️⃣ BreakValidator Tests
+**Archivo:** `src/app/shared/validators/break.validator.spec.ts`
+
+**Setup:**
+- [ ] Instanciación directa
+- [ ] Fixture con form groups
+
+**Test Suite [5 tests]:**
+- [ ] 1.1: debería validar break dentro de horario working
+- [ ] 1.2: debería retornar error si break antes del inicio
+- [ ] 1.3: debería retornar error si break después del fin
+- [ ] 1.4: debería validar sin traslape entre breaks
+- [ ] 1.5: debería manejar breaks múltiples
+
+**Coverage Goal:** 90%
+
+---
+
+### 🔟 AtLeastOneDayValidator Tests
+**Archivo:** `src/app/shared/validators/at-least-one-day.validator.spec.ts`
+
+**Setup:**
+- [ ] Instanciación directa
+- [ ] Fixture con FormArray de días
+
+**Test Suite [3 tests]:**
+- [ ] 1.1: debería retornar null si al menos 1 día isWorking=true
+- [ ] 1.2: debería retornar error si todos los días isWorking=false
+- [ ] 1.3: debería validar FormArray completo
+
+**Coverage Goal:** 90%
+
+---
+
+## 📊 RESUMEN TESTS FASE 12
+
+| Categoría | Archivo | Tests | Líneas Est. | Status |
+|-----------|---------|-------|------------|--------|
+| **Pipes** | display-slot.pipe.spec.ts | 15 | 263 | ✅ DONE |
+| **Servicios** | 4 archivos | 19 | ~600 | ⏳ TODO |
+| **Componentes** | 3 archivos | 52 | ~1500 | ⏳ TODO |
+| **Validadores** | 3 archivos | 12 | ~300 | ⏳ TODO |
+| **TOTAL** | - | **98 tests** | **~2600 líneas** | ⏳ |
+
+**Métricas Esperadas:**
+- ✅ DisplaySlotPipe: 100% coverage
+- 🎯 Servicios: 85%+ coverage
+- 🎯 Componentes: 85%+ coverage
+- 🎯 Validadores: 90%+ coverage
+- **GLOBAL:** 85%+ coverage objetivo
+
+**Tiempo Estimado:**
+1. AuthService (bloqueador): 15 min
+2. ProfileService: 10 min
+3. AvailabilityService: 10 min
+4. ApiService: 10 min
+5. DashboardComponent: 15 min
+6. ProfileEditorComponent: 20 min
+7. AvailabilityConfiguratorComponent: 25 min
+8. Validadores (3): 15 min
+9. Correcciones + Coverage: 20 min
+
+**TOTAL: ~2h 30min**
+
+---
+
+## 🚀 EJECUCIÓN - PASO A PASO
+
+**Orden CRÍTICO (respetar dependencias):**
+```
+1. AuthService.spec.ts (bloqueador)
+   ↓
+2. ProfileService.spec.ts (depende de AuthService)
+3. AvailabilityService.spec.ts (depende de AuthService)
+4. ApiService.spec.ts (independiente)
+   ↓
+5. DashboardComponent.spec.ts (usa AuthService + ProfileService)
+6. ProfileEditorComponent.spec.ts (usa ProfileService)
+7. AvailabilityConfiguratorComponent.spec.ts (usa AvailabilityService)
+   ↓
+8. TimeRangeValidator.spec.ts (independiente)
+9. BreakValidator.spec.ts (independiente)
+10. AtLeastOneDayValidator.spec.ts (independiente)
+   ↓
+11. npm run test:coverage → Verificar 85%+
+12. npm run test:ui → Review visual
+```
+
+**Comandos para ejecutar:**
+```bash
+# Modo watch (desarrollo)
+npm test
+
+# Modo UI (debugging)
+npm run test:ui
+
+# Cobertura completa
+npm run test:coverage
+
+# Test individual
+npm run test:run -- profile.service.spec.ts
+```
 
 ---
 
@@ -523,47 +816,61 @@ availability-configurator/
 ## 📋 TIMELINE FINAL SPRINT 2
 
 ```
-BACKEND (Completado ✅)
-├─ Fases 1-6: ✅ COMPLETADO (3 Enero 2026)
-│  └─ 41 tests pasando + E2E Backend
-│
-FRONTEND (Ahora ⏳)
-├─ Fases 7-8: [50 min] ProfileService + Models
-├─ Fases 9-11: [3h 30min] Dashboard + ProfileEditor + AvailabilityConfigurator
-├─ Fase 12: [1h 30min] Component Tests Vitest (40+ tests)
-└─ Fase 13: [1h 30min] E2E Playwright (20+ tests) 🎖️
+BACKEND (✅ COMPLETADO 9 Enero 2026)
+├─ Fases 1-6: ✅ COMPLETADO (3 Enero)
+│  ├─ 258 Unit Tests (70 validators + 23 service + 165 auth)
+│  └─ 38 Integration Tests (ProvidersController)
+├─ E2E Backend: ✅ COMPLETADO (9 Enero)
+│  └─ 14 E2E Tests (ProvidersControllerE2ETests)
+└─ TOTAL: 275 tests + 14 E2E ✅
 
-TOTAL: 7h 50min (aprox 8h)
+FRONTEND (⏳ EN PROGRESO)
+├─ Fases 7-8: ✅ COMPLETADO (ProfileService + Models)
+├─ Fases 9-11: ✅ COMPLETADO (Dashboard + ProfileEditor + AvailabilityConfigurator)
+├─ Fase 12: ⏳ TODO [2h 30min] Component & Service Tests (98 tests)
+│  ├─ AuthService.spec.ts [15 min] - BLOQUEADOR
+│  ├─ ProfileService.spec.ts [10 min]
+│  ├─ AvailabilityService.spec.ts [10 min]
+│  ├─ ApiService.spec.ts [10 min]
+│  ├─ DashboardComponent.spec.ts [15 min]
+│  ├─ ProfileEditorComponent.spec.ts [20 min]
+│  ├─ AvailabilityConfiguratorComponent.spec.ts [25 min]
+│  └─ Validadores (3 x 5 min) [15 min]
+└─ Fase 13: ⏳ TODO [1h 30min] E2E Playwright (20+ tests) 🎖️
+
+FRONTEND REMAINING: 4h (2h 30min tests + 1h 30min E2E)
 ```
 
 ---
 
 ## ✅ DEFINICIÓN DE COMPLETITUD SPRINT 2
 
-**BACKEND:** ✅ COMPLETADO 3 Enero
+**BACKEND:** ✅ COMPLETADO 9 Enero 2026
 - [x] Entidades, migraciones, servicios, controllers
-- [x] 41 tests unitarios pasando
-- [x] 15 tests de integración pasando
-- [x] E2E Backend tests 100% pasando
+- [x] 258 tests unitarios pasando
+- [x] 38 tests de integración pasando
+- [x] 14 E2E Backend tests 100% pasando
+- [x] **TOTAL: 310 tests** ✅
 
-**FRONTEND:** ⏳ EN PROGRESO
-- [ ] Fase 7-8: Setup & Models
-- [ ] Fase 9-11: Componentes (Dashboard, ProfileEditor, AvailabilityConfigurator)
-- [ ] Fase 12: Component Tests Vitest (40+ tests, 80%+ coverage)
-- [ ] Fase 13: E2E Playwright (20+ tests, todos pasando)
+**FRONTEND:** ⏳ EN PROGRESO (Fase 12-13)
+- [x] Fase 7-8: ProfileService + Models (completado)
+- [x] Fase 9-11: Componentes (completado)
+- [ ] Fase 12: Component Tests (98 tests → 85%+ coverage)
+  - [ ] 4 Service tests (19 tests)
+  - [ ] 3 Component tests (52 tests)
+  - [ ] 3 Validator tests (12 tests)
+  - [ ] 1 Pipe test (15 tests - YA HECHO ✅)
+- [ ] Fase 13: E2E Playwright (20+ tests)
 
 **SPRINT COMPLETADO CUANDO:**
-- ✅ Backend: 100% (tests + E2E)
-- ✅ Frontend: 100% (componentes + tests)
-- ✅ Sin errores de compilación
+- ✅ Backend: 310 tests (HECHO)
+- ✅ Frontend Componentes: Compilando sin errores (HECHO)
+- ⏳ Frontend Unit/Component: 98 tests, 85%+ coverage (PRÓXIMO)
+- ⏳ Frontend E2E: 20+ tests, todos pasando (DESPUÉS)
 - ✅ Manual verification en http://localhost:4200/dashboard
 - ✅ Todos los tests pasando (unit + E2E)
 
----
-
-## 🚀 NEXT STEP
-
-**Esperar visto bueno para empezar Fase 12: Component Tests (Vitest Setup + Tests)**
+**Hito Crítico:** AuthService.spec.ts bloquea todo - debe ser PRIMERO
 
 
 
