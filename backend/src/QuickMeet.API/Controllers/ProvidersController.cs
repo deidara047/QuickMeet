@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuickMeet.Core.Interfaces;
 using QuickMeet.Core.DTOs.Providers;
+using QuickMeet.API.Validators;
 using System.Security.Claims;
 
 namespace QuickMeet.API.Controllers;
@@ -82,14 +83,30 @@ public class ProvidersController : ControllerBase
 
             _logger.LogInformation("Actualizando perfil del proveedor {ProviderId}", providerId);
 
+            // Validar con el Validator (FluentValidation se ejecuta automáticamente en ModelState)
+            var validator = new UpdateProviderRequestValidator();
+            var validationResult = await validator.ValidateAsync(updateDto);
+            
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning("Validación fallida en UpdateProvider");
+                return BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
             var updatedProfile = await _providerService.UpdateProviderAsync(providerId, updateDto);
+
+            if (updatedProfile == null)
+            {
+                _logger.LogWarning("Proveedor {ProviderId} no encontrado", providerId);
+                return NotFound(new { error = "Proveedor no encontrado" });
+            }
 
             _logger.LogInformation("Perfil del proveedor {ProviderId} actualizado exitosamente", providerId);
             return Ok(updatedProfile);
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning("Validación fallida en UpdateProvider: {Message}", ex.Message);
+            _logger.LogWarning("Validación de negocio fallida en UpdateProvider: {Message}", ex.Message);
             return BadRequest(new { error = ex.Message });
         }
         catch (Exception ex)
@@ -118,27 +135,29 @@ public class ProvidersController : ControllerBase
                 return Forbid();
             }
 
-            if (file == null || file.Length == 0)
-            {
-                _logger.LogWarning("Archivo vacío en UploadPhoto");
-                return BadRequest(new { error = "El archivo no puede estar vacío" });
-            }
-
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-
-            if (!allowedExtensions.Contains(fileExtension))
-            {
-                _logger.LogWarning("Extensión no permitida: {Extension}", fileExtension);
-                return BadRequest(new { error = "Tipo de archivo no permitido. Usa JPG, PNG, GIF o WebP" });
-            }
-
             _logger.LogInformation("Subiendo foto para proveedor {ProviderId}", providerId);
 
+            // Validar el archivo con el Validator
             using var stream = file.OpenReadStream();
             using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream);
             var fileContent = memoryStream.ToArray();
+            
+            var uploadRequest = new UploadPhotoRequest
+            {
+                FileContent = fileContent,
+                FileName = file.FileName
+            };
+
+            var validator = new UploadPhotoRequestValidator();
+            var validationResult = await validator.ValidateAsync(uploadRequest);
+
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning("Validación de archivo fallida en UploadPhoto");
+                return BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
             var photoUrl = await _providerService.UploadPhotoAsync(providerId, fileContent, file.FileName);
 
             _logger.LogInformation("Foto subida exitosamente para proveedor {ProviderId}", providerId);
@@ -146,7 +165,7 @@ public class ProvidersController : ControllerBase
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning("Validación fallida en UploadPhoto: {Message}", ex.Message);
+            _logger.LogWarning("Validación de negocio fallida en UploadPhoto: {Message}", ex.Message);
             return BadRequest(new { error = ex.Message });
         }
         catch (Exception ex)
