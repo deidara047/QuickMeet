@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, timeout } from 'rxjs/operators';
-import { environment } from '@env/environment.ts';
+import { environment } from '@env/environment';
 
 /**
  * Base HTTP service that uses environment configuration
