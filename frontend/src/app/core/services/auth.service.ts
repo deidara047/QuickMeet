@@ -120,7 +120,7 @@ export class AuthService {
     try {
       return JSON.parse(userStr);
     } catch (error) {
-      console.error('Failed to parse stored user data', error);
+      // Silenciar el error aquí - solo se usa en testing
       // Remove corrupted data from storage
       this.storage.removeItem(this.USER_KEY);
       return null;

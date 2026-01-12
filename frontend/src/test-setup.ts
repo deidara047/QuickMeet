@@ -1,7 +1,3 @@
-// ============================================================================
-// FILE: src/test-setup.ts (VERSIÓN FINAL - CORREGIDA)
-// ============================================================================
-
 /**
  * Vitest Test Setup using Projects
  * 
@@ -9,13 +5,6 @@
  * It initializes Angular TestBed ONCE and properly resets it between tests.
  */
 
-// ✅ CRÍTICO 0: Import reflect-metadata PRIMERO (necesario para Angular DI metadata)
-import 'reflect-metadata';
-
-// ✅ CRÍTICO 1: Import compiler SEGUNDO (antes de zone.js)
-import '@angular/compiler';
-
-// ✅ CRÍTICO 2: Import zone.js TERCERO
 import 'zone.js';
 import 'zone.js/testing';
 
