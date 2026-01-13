@@ -3,13 +3,19 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "emitDecoratorMetadata": true, // ✅ CRÍTICO
+    "experimentalDecorators": true, // ✅ CRÍTICO
     "outDir": "./out-tsc/app",
     "types": []
   },
+  "files": [
+    "src/main.ts"
+  ],
   "include": [
-    "src/**/*.ts"
+    "src/**/*.d.ts"
   ],
   "exclude": [
-    "src/**/*.spec.ts"
+    "src/**/*.spec.ts",
+    "src/test-setup.ts"
   ]
 }

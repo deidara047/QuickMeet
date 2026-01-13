@@ -1,0 +1,49 @@
+/**
+ * Test Utilities - TestBed Initialization
+ * 
+ * IMPORTANTE: Este archivo debe ser importado en TODOS los archivos .spec.ts
+ * que usen TestBed (directamente o indirectamente).
+ * 
+ * Razón: Vitest puede inicializar TestBed via setupFiles (projects),
+ * este archivo maneja la inicialización si aún no ha ocurrido.
+ */
+
+import { getTestBed } from '@angular/core/testing';
+import { BrowserTestingModule } from '@angular/platform-browser/testing';
+import { platformBrowserTesting } from '@angular/platform-browser/testing';
+
+/**
+ * Inicializar TestBed de forma segura.
+ * Puede ser llamado múltiples veces sin efectos secundarios.
+ * 
+ * Si TestBed ya fue inicializado (por setupFiles), no hace nada.
+ */
+export function initializeTestBed(): void {
+  const testBed = getTestBed();
+  
+  // Detectar si TestBed ya fue inicializado
+  // (Si ya está inicializado, intentar inicializar de nuevo genera error)
+  try {
+    console.log('🚀 Initializing TestBed...');
+    
+    testBed.initTestEnvironment(
+      BrowserTestingModule,
+      platformBrowserTesting(),
+      {
+        teardown: { destroyAfterEach: true }
+      }
+    );
+    
+    console.log('✅ TestBed initialized successfully!');
+  } catch (error: any) {
+    // Si ya fue inicializado, el error será "Cannot set base providers because it has already been called"
+    if (error.message?.includes('already been called') || error.message?.includes('already been instantiated')) {
+      console.log('✅ TestBed was already initialized (via setupFiles)');
+    } else {
+      throw error; // Re-throw si es otro tipo de error
+    }
+  }
+}
+
+// ✅ Inicializar automáticamente al importar este archivo
+initializeTestBed();

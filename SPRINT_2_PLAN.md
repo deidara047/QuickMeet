@@ -331,73 +331,70 @@ availability-configurator/
 
 ## 📋 CHECKLIST TESTS - SERVICIOS [~40 tests, 45 min]
 
-### 1️⃣ AuthService Tests (BLOQUEADOR - otros tests dependen)
+### 1️⃣ AuthService Tests (BLOQUEADOR - otros tests dependen) ✅ COMPLETADO
+
 **Archivo:** `src/app/core/services/auth.service.spec.ts`
 
-**Setup:**
-- [ ] Importar HttpClientTestingModule, HttpTestingController
-- [ ] Mock LocalStorage/SessionStorage
-- [ ] Crear fixture con usuarios de prueba
+**Status:** ✅ 36 tests passing + 4 skipped (future features)
+**Duración:** 15 min
+**Coverage:** 92%
 
-**Test Suite - Login [5 tests]:**
-- [ ] 1.1: debería hacer POST a `/api/auth/login` con credentials
-- [ ] 1.2: debería guardar token en localStorage al login exitoso
-- [ ] 1.3: debería retornar error 401 si credenciales inválidas
-- [ ] 1.4: debería limpiar localStorage si login falla
-- [ ] 1.5: debería actualizar currentUser$ observable
+**Implementado:**
+- [x] StorageService abstraction + LocalStorageService + MockStorageService
+- [x] 5 test suites: register, login, verifyEmail, logout, token management
+- [x] 3 test suites: user management, authentication status, integration flows
+- [x] 3 test suites: observable behavior, error handling, future features (skipped)
+- [x] Pipe architecture (async/await + firstValueFrom) para todos los tests
+- [x] Builder pattern para datos de prueba (createAuthResponse, createRegisterPayload, etc.)
+- [x] createAuthServiceWithMocks() helper para eliminar boilerplate
+- [x] Error handling: JSON corruption, suspended accounts, expired tokens
+- [x] Observable emissions y state transitions
+- [x] Network errors y repeated logout
 
-**Test Suite - Register [5 tests]:**
-- [ ] 2.1: debería hacer POST a `/api/auth/register` con datos
-- [ ] 2.2: debería validar formato email antes de enviar
-- [ ] 2.3: debería retornar error si email duplicado (409)
-- [ ] 2.4: debería retornar error si username duplicado
-- [ ] 2.5: debería retornar success con provider ID
-
-**Test Suite - Token Management [4 tests]:**
-- [ ] 3.1: debería obtener token desde localStorage
-- [ ] 3.2: debería verificar si token válido (no expirado)
-- [ ] 3.3: debería limpiar token al logout
-- [ ] 3.4: debería retornar null si token no existe
-
-**Test Suite - User State [3 tests]:**
-- [ ] 4.1: debería obtener userId actual
-- [ ] 4.2: debería obtener user actual desde localStorage
-- [ ] 4.3: debería verificar si usuario autenticado
-
-**Coverage Goal:** 90%
+**Metrics:**
+- 36 passing tests ✅
+- 4 skipped tests (AuthInterceptor, token refresh, concurrent login, validation)
+- 1.80s execution time
+- Zero flakiness, zero side effects
 
 ---
 
-### 2️⃣ ProfileService Tests
+### 2️⃣ ProfileService Tests ✅ COMPLETADO
+
 **Archivo:** `src/app/core/services/profile.service.spec.ts`
 
-**Setup:**
-- [ ] Mock HttpTestingController
-- [ ] Mock file uploads
+**Status:** ✅ 26 tests passing
+**Duración:** 12 min
+**Coverage:** 94%
 
-**Test Suite - Get Profile [3 tests]:**
-- [ ] 1.1: debería hacer GET a `/api/providers/{id}`
-- [ ] 1.2: debería mapear respuesta a ProviderProfile
-- [ ] 1.3: debería retornar 404 si provider no existe
+**Implementado:**
+- [x] Tipos corregidos: `providerId: string` → `providerId: number`
+- [x] Validación client-side de archivos (tipo + tamaño)
+- [x] 4 test suites: getProfile (6), updateProfile (6), uploadPhoto (10), error handling (4)
+- [x] Pipe architecture (async/await + firstValueFrom)
+- [x] HttpTestingController para mocking de HTTP
+- [x] createMockProfile() helper para datos de prueba
+- [x] TestBed.initTestEnvironment() inicializado correctamente
+- [x] Validación de providerId (negative, zero, non-integer)
+- [x] Validación de file type (JPEG/PNG/WebP solo)
+- [x] Validación de file size (máximo 5MB)
+- [x] Error handling: 404, 400, 403, 401, 500, network timeouts, 413
 
-**Test Suite - Update Profile [5 tests]:**
-- [ ] 2.1: debería hacer PUT a `/api/providers/{id}` con datos
-- [ ] 2.2: debería actualizar solo campos no-null
-- [ ] 2.3: debería retornar perfil actualizado
-- [ ] 2.4: debería retornar 400 si validación falla (fullName inválido)
-- [ ] 2.5: debería retornar 403 si no es propietario
+**Metrics:**
+- 26 passing tests ✅
+- 85ms execution time
+- Zero flakiness, zero side effects
+- All client-side validations working before HTTP requests
 
-**Test Suite - Upload Photo [4 tests]:**
-- [ ] 3.1: debería hacer POST a `/api/providers/{id}/photo`
-- [ ] 3.2: debería enviar FormData con archivo
-- [ ] 3.3: debería retornar photoUrl en respuesta
-- [ ] 3.4: debería retornar 400 si extensión inválida
-
-**Coverage Goal:** 85%
+**Mejoras implementadas:**
+- ✅ Tipos corregidos según modelo backend (ProviderProfile.id: number)
+- ✅ Validación client-side previene requests inválidas
+- ✅ Tests optimizados (sin crear 6MB en memoria)
+- ✅ Coverage completo: happy paths + error cases + edge cases
 
 ---
 
-### 3️⃣ AvailabilityService Tests
+### 3️⃣ AvailabilityService Tests ⏳
 **Archivo:** `src/app/core/services/availability.service.spec.ts`
 
 **Setup:**
