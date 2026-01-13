@@ -61,7 +61,7 @@ describe('ProfileService', () => {
   // ========================================================================
 
   describe('getProfile', () => {
-    it('should make GET request to /api/providers/{id}', async () => {
+    it('debería hacer una solicitud GET a /api/providers/{id}', async () => {
       const mockProfile = createMockProfile();
 
       const promise = firstValueFrom(service.getProfile(providerId));
@@ -74,7 +74,7 @@ describe('ProfileService', () => {
       expect(result).toEqual(mockProfile);
     });
 
-    it('should map response to ProviderProfile with correct types', async () => {
+    it('debería mapear la respuesta a ProviderProfile con tipos correctos', async () => {
       const mockProfile = createMockProfile({
         fullName: 'Dr. María García',
         email: 'maria@example.com',
@@ -92,7 +92,7 @@ describe('ProfileService', () => {
       expect(typeof result.id).toBe('number');
     });
 
-    it('should handle 404 when provider does not exist', async () => {
+    it('debería manejar 404 cuando el proveedor no existe', async () => {
       const promise = firstValueFrom(service.getProfile(providerId)).catch(
         (error) => error
       );
@@ -104,7 +104,7 @@ describe('ProfileService', () => {
       expect(error.status).toBe(404);
     });
 
-    it('should reject invalid provider ID (negative number)', async () => {
+    it('debería rechazar ID de proveedor inválido (número negativo)', async () => {
       const promise = firstValueFrom(service.getProfile(-1)).catch(
         (error) => error
       );
@@ -114,7 +114,7 @@ describe('ProfileService', () => {
       expect(error.message).toContain('positive integer');
     });
 
-    it('should reject invalid provider ID (zero)', async () => {
+    it('debería rechazar ID de proveedor inválido (cero)', async () => {
       const promise = firstValueFrom(service.getProfile(0)).catch(
         (error) => error
       );
@@ -123,7 +123,7 @@ describe('ProfileService', () => {
       expect(error.message).toContain('Invalid provider ID');
     });
 
-    it('should reject non-integer provider ID', async () => {
+    it('debería rechazar ID de proveedor no entero', async () => {
       const promise = firstValueFrom(service.getProfile(3.14 as any)).catch(
         (error) => error
       );
@@ -138,7 +138,7 @@ describe('ProfileService', () => {
   // ========================================================================
 
   describe('updateProfile', () => {
-    it('should make PUT request to /api/providers/{id} with updated data', async () => {
+    it('debería hacer una solicitud PUT a /api/providers/{id} con datos actualizados', async () => {
       const updatedProfile = createMockProfile({
         fullName: 'Dr. Juan Pérez Updated'
       });
@@ -159,7 +159,7 @@ describe('ProfileService', () => {
       expect(result.fullName).toBe('Dr. Juan Pérez Updated');
     });
 
-    it('should update only non-null fields', async () => {
+    it('debería actualizar solo campos no nulos', async () => {
       const updatePayload: Partial<ProviderProfile> = {
         description: 'Nuevo especialista'
       };
@@ -179,7 +179,7 @@ describe('ProfileService', () => {
       expect(result.description).toBe('Nuevo especialista');
     });
 
-    it('should return updated profile data', async () => {
+    it('debería retornar datos de perfil actualizados', async () => {
       const updatedProfile = createMockProfile({
         phoneNumber: '+34 987 654 321'
       });
@@ -199,7 +199,7 @@ describe('ProfileService', () => {
       expect(result.id).toBe(providerId);
     });
 
-    it('should handle 400 validation error (invalid fullName)', async () => {
+    it('debería manejar error de validación 400 (fullName inválido)', async () => {
       const updatePayload: Partial<ProviderProfile> = {
         fullName: 'A'
       };
@@ -218,7 +218,7 @@ describe('ProfileService', () => {
       expect(error.status).toBe(400);
     });
 
-    it('should handle 403 when user is not the profile owner', async () => {
+    it('debería manejar 403 cuando el usuario no es el dueño del perfil', async () => {
       const updatePayload: Partial<ProviderProfile> = {
         fullName: 'Dr. Someone Else'
       };
@@ -237,7 +237,7 @@ describe('ProfileService', () => {
       expect(error.status).toBe(403);
     });
 
-    it('should reject invalid provider ID for update', async () => {
+    it('debería rechazar ID de proveedor inválido para actualización', async () => {
       const updatePayload: Partial<ProviderProfile> = { fullName: 'Updated' };
       const promise = firstValueFrom(
         service.updateProfile(-1, updatePayload)
@@ -254,7 +254,7 @@ describe('ProfileService', () => {
   // ========================================================================
 
   describe('uploadPhoto', () => {
-    it('should make POST request to /api/providers/{id}/photo', async () => {
+    it('debería hacer una solicitud POST a /api/providers/{id}/photo', async () => {
       const mockFile = new File(['photo'], 'profile.jpg', {
         type: 'image/jpeg'
       });
@@ -274,7 +274,7 @@ describe('ProfileService', () => {
       expect(result.photoUrl).toBe('https://example.com/photos/profile-123.jpg');
     });
 
-    it('should send FormData with file', async () => {
+    it('debería enviar FormData con archivo', async () => {
       const mockFile = new File(['photo content'], 'avatar.png', {
         type: 'image/png'
       });
@@ -296,7 +296,7 @@ describe('ProfileService', () => {
       await promise;
     });
 
-    it('should return photoUrl in response', async () => {
+    it('debería retornar photoUrl en la respuesta', async () => {
       const mockFile = new File([''], 'photo.jpg', { type: 'image/jpeg' });
       const photoUrl = 'https://cdn.example.com/photos/profile-uuid.jpg';
       const responseData = { photoUrl };
@@ -312,7 +312,7 @@ describe('ProfileService', () => {
       expect(result.photoUrl).toBe(photoUrl);
     });
 
-    it('should reject invalid file type before HTTP request (JPEG/PNG/WebP only)', async () => {
+    it('debería rechazar tipo de archivo inválido antes de la solicitud HTTP (solo JPEG/PNG/WebP)', async () => {
       const pdfFile = new File(['content'], 'document.pdf', {
         type: 'application/pdf'
       });
@@ -329,7 +329,7 @@ describe('ProfileService', () => {
       expect(() => httpMock.expectOne(`${apiUrl}/${providerId}/photo`)).toThrow();
     });
 
-    it('should reject image/gif (not in allowed types)', async () => {
+    it('debería rechazar image/gif (no en tipos permitidos)', async () => {
       const gifFile = new File(['gif content'], 'animation.gif', {
         type: 'image/gif'
       });
@@ -343,7 +343,7 @@ describe('ProfileService', () => {
       expect(() => httpMock.expectOne(`${apiUrl}/${providerId}/photo`)).toThrow();
     });
 
-    it('should reject file exceeding 5MB before HTTP request', async () => {
+    it('debería rechazar archivo que excede 5MB antes de la solicitud HTTP', async () => {
       const oversizedFile = new File(['x'], 'huge.jpg', { type: 'image/jpeg' });
       Object.defineProperty(oversizedFile, 'size', {
         value: 6 * 1024 * 1024
@@ -360,7 +360,7 @@ describe('ProfileService', () => {
       expect(() => httpMock.expectOne(`${apiUrl}/${providerId}/photo`)).toThrow();
     });
 
-    it('should accept valid JPEG file', async () => {
+    it('debería aceptar archivo JPEG válido', async () => {
       const validFile = new File(['jpeg'], 'profile.jpg', { type: 'image/jpeg' });
       const responseData = { photoUrl: 'https://example.com/p.jpg' };
 
@@ -375,7 +375,7 @@ describe('ProfileService', () => {
       expect(result.photoUrl).toBe('https://example.com/p.jpg');
     });
 
-    it('should accept valid PNG file', async () => {
+    it('debería aceptar archivo PNG válido', async () => {
       const validFile = new File(['png'], 'profile.png', { type: 'image/png' });
       const responseData = { photoUrl: 'https://example.com/p.png' };
 
@@ -390,7 +390,7 @@ describe('ProfileService', () => {
       expect(result.photoUrl).toBe('https://example.com/p.png');
     });
 
-    it('should accept valid WebP file', async () => {
+    it('debería aceptar archivo WebP válido', async () => {
       const validFile = new File(['webp'], 'profile.webp', { type: 'image/webp' });
       const responseData = { photoUrl: 'https://example.com/p.webp' };
 
@@ -405,7 +405,7 @@ describe('ProfileService', () => {
       expect(result.photoUrl).toBe('https://example.com/p.webp');
     });
 
-    it('should reject invalid provider ID for photo upload', async () => {
+    it('debería rechazar ID de proveedor inválido para carga de foto', async () => {
       const validFile = new File(['jpg'], 'photo.jpg', { type: 'image/jpeg' });
       const promise = firstValueFrom(
         service.uploadPhoto(-1, validFile)
@@ -422,7 +422,7 @@ describe('ProfileService', () => {
   // ========================================================================
 
   describe('error handling', () => {
-    it('should handle 500 server error gracefully', async () => {
+    it('debería manejar el error de servidor 500 de forma elegante', async () => {
       const promise = firstValueFrom(
         service.getProfile(providerId)
       ).catch((error) => error);
@@ -437,7 +437,7 @@ describe('ProfileService', () => {
       expect(error.status).toBe(500);
     });
 
-    it('should handle network timeout', async () => {
+    it('debería manejar timeout de red', async () => {
       const promise = firstValueFrom(
         service.getProfile(providerId)
       ).catch((error) => error);
@@ -449,7 +449,7 @@ describe('ProfileService', () => {
       expect(error).toBeDefined();
     });
 
-    it('should handle 401 unauthorized for update', async () => {
+    it('debería manejar 401 no autorizado para actualización', async () => {
       const updatePayload: Partial<ProviderProfile> = {
         fullName: 'Updated Name'
       };
@@ -468,7 +468,7 @@ describe('ProfileService', () => {
       expect(error.status).toBe(401);
     });
 
-    it('should handle 413 Payload Too Large from server', async () => {
+    it('debería manejar 413 Payload Too Large del servidor', async () => {
       const mockFile = new File(['content'], 'huge.jpg', { type: 'image/jpeg' });
 
       const promise = firstValueFrom(
